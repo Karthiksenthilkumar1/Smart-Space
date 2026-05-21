@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../scan/scan_screen.dart';
 import '../scan/history_screen.dart';
+import '../profile/profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -329,6 +330,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           );
         }
+        if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+        );
+  }
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
