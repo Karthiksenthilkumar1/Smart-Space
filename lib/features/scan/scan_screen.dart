@@ -1,8 +1,103 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'measurement_result_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
-class ScanScreen extends StatelessWidget {
+class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
+
+  @override
+  State<ScanScreen> createState() => _ScanScreenState();
+}
+
+class _ScanScreenState extends State<ScanScreen> {
+  CameraController? _cameraController;
+  bool _isCameraReady = false;
+  bool _isFlashOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCamera();
+  }
+
+  Future<void> _initCamera() async {
+    final cameras = await availableCameras();
+
+    if (cameras.isEmpty) {
+      return;
+    }
+
+    _cameraController = CameraController(
+      cameras.first,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
+    await _cameraController!.initialize();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isCameraReady = true;
+    });
+  }
+
+  Future<void> _toggleFlash() async {
+    if (_cameraController == null) return;
+
+    _isFlashOn = !_isFlashOn;
+
+    await _cameraController!.setFlashMode(
+      _isFlashOn ? FlashMode.torch : FlashMode.off,
+    );
+
+    setState(() {});
+  }
+
+  Future<void> _captureImage() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+
+    final XFile image = await _cameraController!.takePicture();
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MeasurementResultScreen(
+          imagePath: image.path,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (image == null || !mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MeasurementResultScreen(
+          imagePath: image.path,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,16 +106,16 @@ class ScanScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // Camera preview placeholder
-            const Center(
-              child: Icon(
-                Icons.camera_alt,
-                color: Colors.white24,
-                size: 120,
-              ),
+            // REAL CAMERA PREVIEW
+            Positioned.fill(
+              child: _isCameraReady
+                  ? CameraPreview(_cameraController!)
+                  : const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
             ),
 
-            // Top buttons
+            // TOP LEFT CLOSE
             Positioned(
               top: 20,
               left: 20,
@@ -35,19 +130,22 @@ class ScanScreen extends StatelessWidget {
               ),
             ),
 
+            // TOP RIGHT FLASH
             Positioned(
               top: 20,
               right: 20,
               child: CircleAvatar(
                 backgroundColor: Colors.white,
                 child: IconButton(
-                  icon: const Icon(Icons.flash_on),
-                  onPressed: () {},
+                  icon: Icon(
+                    _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                  ),
+                  onPressed: _toggleFlash,
                 ),
               ),
             ),
 
-            // Bottom controls
+            // BOTTOM CONTROLS
             Positioned(
               bottom: 35,
               left: 20,
@@ -55,17 +153,13 @@ class ScanScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _bottomButton(Icons.photo_library, "Gallery"),
+                  GestureDetector(
+                    onTap: _pickImageFromGallery,
+                    child: _bottomButton(Icons.photo_library, "Gallery"),
+                  ),
 
                   GestureDetector(
-                    onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MeasurementResultScreen(),
-                            ),
-                        );
-                    },
+                    onTap: _captureImage,
                     child: Container(
                       height: 78,
                       width: 78,

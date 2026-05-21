@@ -1,7 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'suggestions_screen.dart';
 class MeasurementResultScreen extends StatelessWidget {
-  const MeasurementResultScreen({super.key});
+  final String? imagePath;
+
+  const MeasurementResultScreen({
+    super.key,
+    this.imagePath,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +39,19 @@ class MeasurementResultScreen extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  const Center(
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: imagePath != null
+                      ? Image.file(
+                        File(imagePath!),
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                    )
+                  : const Center(
                     child: Icon(Icons.chair, size: 110, color: Colors.indigo),
                   ),
+                ),
                   Positioned(
                     top: 55,
                     left: 45,
