@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../scan/scan_screen.dart';
 import '../scan/history_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../core/widgets/bottom_nav_item.dart';
+import '../../core/widgets/animated_card.dart';
+import '../../core/navigation/app_routes.dart';
+import '../../core/widgets/glass_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,7 +23,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.white,
 
       // BODY
-      body: SafeArea(
+      body: Stack(
+        children: [
+
+          // BACKGROUND GRADIENT BLOBS
+          Positioned(
+            top: -120,
+            right: -80,
+            child: Container(
+              height: 260,
+              width: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.indigo.withOpacity(0.08),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: -100,
+            left: -70,
+            child: Container(
+              height: 220,
+              width: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.purple.withOpacity(0.05),
+              ),
+            ),
+          ),
+
+   
+      
+      
+      
+      SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -64,20 +102,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _actionCard(
-                      icon: Icons.camera_alt_outlined,
-                      title: "Scan Space",
-                      subtitle: "Use Camera",
+                    child: AnimatedCardWrapper(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          AppRoutes.fadeSlide(
+                            const ScanScreen(),
+                          ),
+                        );
+                      },
+                      child: _actionCard(
+                        icon: Icons.camera_alt_outlined,
+                        title: "Scan Space",
+                        subtitle: "Use Camera",
+                      ),
                     ),
                   ),
 
                   const SizedBox(width: 15),
 
                   Expanded(
-                    child: _actionCard(
-                      icon: Icons.image_outlined,
-                      title: "Upload Image",
-                      subtitle: "From Gallery",
+                    child: AnimatedCardWrapper(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          AppRoutes.fadeSlide(
+                            const ScanScreen(),
+                          ),
+                        );
+                      },
+                      child: _actionCard(
+                        icon: Icons.image_outlined,
+                        title: "Upload Image",
+                        subtitle: "From Gallery",
+                      ),
                     ),
                   ),
                 ],
@@ -134,6 +192,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+        ],
+      ),
 
       // FLOATING CAMERA BUTTON
       floatingActionButton: Container(
@@ -160,10 +220,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           elevation: 0,
           onPressed: () {
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ScanScreen(),
-                ),
+              context,
+              AppRoutes.fadeSlide(
+                const ScanScreen(),
+              ),
             );
           },
           child: const Icon(
@@ -182,18 +242,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
         notchMargin: 10,
         elevation: 10,
         child: SizedBox(
-          height: 70,
+          height: 85,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              BottomNavItem(
+                icon: Icons.home,
+                label: "Home",
+                active: currentIndex == 0,
+                onTap: () {
+                  setState(() => currentIndex = 0);
+                },
+              ),
 
-              _navItem(Icons.home, "Home", 0),
-              _navItem(Icons.history, "History", 1),
+              BottomNavItem(
+                icon: Icons.history,
+                label: "History",
+                active: currentIndex == 1,
+                onTap: () {
+                  setState(() => currentIndex = 1);
+
+                  Navigator.push(
+                    context,
+                    AppRoutes.fadeSlide(
+                      const HistoryScreen(),
+                    ),
+                  );
+                },
+              ),
 
               const SizedBox(width: 40),
 
-              _navItem(Icons.bookmark_border, "Saved", 2),
-              _navItem(Icons.person_outline, "Profile", 3),
+              BottomNavItem(
+                icon: Icons.bookmark_border,
+                label: "Saved",
+                active: currentIndex == 2,
+                onTap: () {
+                  setState(() => currentIndex = 2);
+                },
+              ),
+
+              BottomNavItem(
+                icon: Icons.person_outline,
+                label: "Profile",
+                active: currentIndex == 3,
+                onTap: () {
+                  setState(() => currentIndex = 3);
+
+                  Navigator.push(
+                    context,
+                    AppRoutes.fadeSlide(
+                      const ProfileScreen(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -207,154 +310,96 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String title,
     required String subtitle,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 25),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            color: Colors.indigo,
-            size: 40,
-          ),
-
-          const SizedBox(height: 15),
-
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+    return GlassCard(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 25),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.65),
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.indigo.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
             ),
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: Colors.grey,
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.indigo, size: 40),
+            const SizedBox(height: 15),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 5),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
       ),
     );
   }
-
   // MEASUREMENT TILE
   Widget _measurementTile(String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-
-          // IMAGE PLACEHOLDER
-          Container(
-            height: 60,
-            width: 60,
-            decoration: BoxDecoration(
-              color: Colors.indigo.shade50,
-              borderRadius: BorderRadius.circular(12),
+    return AnimatedCardWrapper(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: const Icon(
-              Icons.home_work_outlined,
-              color: Colors.indigo,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              height: 60,
+              width: 60,
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.home_work_outlined,
+                color: Colors.indigo,
+              ),
             ),
-          ),
-
-          const SizedBox(width: 15),
-
-          // TEXTS
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Colors.grey,
+                  const SizedBox(height: 5),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.grey),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-
-          const Icon(Icons.more_vert),
-        ],
-      ),
-    );
-  }
-
-  // BOTTOM NAV ITEM
-  Widget _navItem(IconData icon, String label, int index) {
-    final bool active = currentIndex == index;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          currentIndex = index;
-        });
-
-        // HISTORY
-        if (index == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HistoryScreen(),
-            ),
-          );
-        }
-        if (index == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
-        );
-  }
-      },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: active ? Colors.indigo : Colors.grey,
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            label,
-            style: TextStyle(
-              color: active ? Colors.indigo : Colors.grey,
-              fontSize: 12,
-            ),
-          ),
-        ],
+            const Icon(Icons.more_vert),
+          ],
+        ),
       ),
     );
   }

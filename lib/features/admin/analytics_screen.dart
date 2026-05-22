@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/gradient_header_card.dart';
+import '../../core/widgets/activity_tile.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -40,32 +42,10 @@ class AnalyticsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
-              ),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Platform Performance",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Track user engagement and recommendation performance.",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
+          const GradientHeaderCard(
+            title: "Platform Performance",
+            subtitle: "Track user engagement and recommendation performance.",
+            icon: Icons.analytics,
           ),
 
           const SizedBox(height: 25),
@@ -134,45 +114,19 @@ class AnalyticsScreen extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          _activityTile(
-            Icons.camera_alt,
-            "245 new scans completed today",
+          const ActivityTile(
+            icon: Icons.camera_alt,
+            text: "245 new scans completed today",
           ),
 
-          _activityTile(
-            Icons.sync,
-            "Amazon products synced successfully",
+            const ActivityTile(
+            icon: Icons.sync,
+            text: "Amazon products synced successfully",
           ),
 
-          _activityTile(
-            Icons.recommend,
-            "New recommendation rules applied",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _activityTile(IconData icon, String text) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.indigo),
-
-          const SizedBox(width: 15),
-
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 15),
-            ),
+            const ActivityTile(
+            icon: Icons.recommend,
+            text: "New recommendation rules applied",
           ),
         ],
       ),
