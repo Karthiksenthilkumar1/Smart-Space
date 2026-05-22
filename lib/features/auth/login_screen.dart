@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../dashboard/dashboard_screen.dart';
+import 'package:smart_space/core/services/api_service.dart';
+
 import '../admin/admin_dashboard_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +15,50 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isUser = true;
   bool obscurePassword = true;
   bool rememberMe = false;
+  bool isLoading = false;
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  Future<void> _handleLogin() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await ApiService.login(
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+    );
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (response["statusCode"] == 200) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              isUser ? const DashboardScreen() : const AdminDashboardScreen(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response["data"]["message"] ?? "Login failed",
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +73,6 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 20),
 
-                // HEADER
                 Row(
                   children: const [
                     Icon(Icons.home_work_rounded,
@@ -35,33 +80,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(width: 10),
                     Text(
                       "SpaceFit",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
 
                 const SizedBox(height: 10),
-
                 const Text(
                   "Measure. Analyze. Perfect.",
                   style: TextStyle(color: Colors.grey),
                 ),
 
                 const SizedBox(height: 30),
-
                 const Text(
                   "Welcome Back!",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 5),
-
                 const Text(
                   "Login to continue to your account",
                   style: TextStyle(color: Colors.grey),
@@ -69,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 25),
 
-                // TOGGLE (User / Admin)
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
@@ -86,8 +122,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                // EMAIL
                 TextField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     labelText: "Email",
                     prefixIcon: const Icon(Icons.email),
@@ -99,8 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 15),
 
-                // PASSWORD
                 TextField(
+                  controller: passwordController,
                   obscureText: obscurePassword,
                   decoration: InputDecoration(
                     labelText: "Password",
@@ -125,7 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // REMEMBER + FORGOT
                 Row(
                   children: [
                     Checkbox(
@@ -147,7 +182,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // LOGIN BUTTON
                 Container(
                   width: double.infinity,
                   height: 55,
@@ -161,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Colors.indigo.withOpacity(0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
-                      )
+                      ),
                     ],
                   ),
                   child: ElevatedButton(
@@ -172,29 +206,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                            isUser ? const DashboardScreen() : const AdminDashboardScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "LOGIN",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
+                    onPressed: isLoading ? null : _handleLogin,
+                    child: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "LOGIN",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
                   ),
                 ),
 
                 const SizedBox(height: 25),
 
-                // DIVIDER
                 Row(
                   children: const [
                     Expanded(child: Divider()),
@@ -208,7 +235,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                // SOCIAL LOGIN
                 Row(
                   children: [
                     Expanded(
@@ -216,12 +242,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () {},
                         icon: const Icon(Icons.g_mobiledata, size: 28),
                         label: const Text("Google"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
                     ),
                     const SizedBox(width: 15),
@@ -230,18 +250,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () {},
                         icon: const Icon(Icons.apple, size: 22),
                         label: const Text("Apple"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -250,7 +262,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // TOGGLE WIDGET
   Widget _toggleTile(String text, bool active, bool value) {
     return Expanded(
       child: GestureDetector(
@@ -261,14 +272,6 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             color: active ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 5,
-                    )
-                  ]
-                : [],
           ),
           child: Center(
             child: Text(
