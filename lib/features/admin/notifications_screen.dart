@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/empty_state.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
