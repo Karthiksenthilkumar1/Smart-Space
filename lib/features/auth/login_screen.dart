@@ -3,6 +3,8 @@ import 'package:smart_space/core/services/api_service.dart';
 
 import '../admin/admin_dashboard_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import 'signup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,11 +37,32 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (response["statusCode"] == 200) {
+      final userRole = response["data"]["user"]["role"];
+
+      if (isUser && userRole != "USER") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("This account is not a User account"),
+          ),
+        );
+        return;
+      }
+
+      if (!isUser && userRole != "ADMIN") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("This account is not an Admin account"),
+          ),
+        );
+        return;
+      }
+
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              isUser ? const DashboardScreen() : const AdminDashboardScreen(),
+          builder: (context) => userRole == "ADMIN"
+              ? const AdminDashboardScreen()
+              : const DashboardScreen(),
         ),
       );
     } else {
@@ -75,30 +98,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 Row(
                   children: const [
-                    Icon(Icons.home_work_rounded,
-                        size: 40, color: Colors.indigo),
+                    Icon(
+                      Icons.home_work_rounded,
+                      size: 40,
+                      color: Colors.indigo,
+                    ),
                     SizedBox(width: 10),
                     Text(
                       "SpaceFit",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 10),
+
                 const Text(
                   "Measure. Analyze. Perfect.",
                   style: TextStyle(color: Colors.grey),
                 ),
 
                 const SizedBox(height: 30),
+
                 const Text(
                   "Welcome Back!",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
                 const SizedBox(height: 5),
+
                 const Text(
                   "Login to continue to your account",
                   style: TextStyle(color: Colors.grey),
@@ -174,7 +208,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text("Remember me"),
                     const Spacer(),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ForgotPasswordScreen(),
+                          ),
+                        );
+                      },
                       child: const Text("Forgot Password?"),
                     ),
                   ],
@@ -187,7 +228,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 55,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+                      colors: [
+                        Color(0xFF4F46E5),
+                        Color(0xFF6366F1),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
@@ -208,7 +252,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     onPressed: isLoading ? null : _handleLogin,
                     child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
                         : const Text(
                             "LOGIN",
                             style: TextStyle(
@@ -217,6 +263,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               letterSpacing: 1,
                             ),
                           ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Don't have an account? Sign Up",
+                    ),
                   ),
                 ),
 
@@ -277,7 +341,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Text(
               text,
               style: TextStyle(
-                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                fontWeight:
+                    active ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
