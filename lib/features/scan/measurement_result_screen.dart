@@ -1,17 +1,59 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'suggestions_screen.dart';
+import 'package:smart_space/core/services/api_service.dart';
 
-class MeasurementResultScreen extends StatelessWidget {
+class MeasurementResultScreen extends StatefulWidget {
   final String? imagePath;
 
-  const MeasurementResultScreen({
-    super.key,
-    this.imagePath,
-  });
+  const MeasurementResultScreen({super.key, this.imagePath});
+
+  @override
+  State<MeasurementResultScreen> createState() =>
+      _MeasurementResultScreenState();
+}
+
+class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
+  bool isLoading = true;
+
+  double width = 0;
+  double height = 0;
+  double depth = 0;
+  double area = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMeasurement();
+  }
+
+  Future<void> _loadMeasurement() async {
+    final response = await ApiService.analyzeMeasurement();
+
+    if (response["statusCode"] == 200) {
+      final measurement = response["data"]["measurement"];
+
+      setState(() {
+        width = measurement["width"].toDouble();
+        height = measurement["height"].toDouble();
+        depth = measurement["depth"].toDouble();
+        area = measurement["area"].toDouble();
+        isLoading = false;
+      });
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8F9FF),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
       appBar: AppBar(
@@ -43,9 +85,9 @@ class MeasurementResultScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(28),
-                  child: imagePath != null
+                  child: widget.imagePath != null
                       ? Image.file(
-                          File(imagePath!),
+                          File(widget.imagePath!),
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
@@ -76,11 +118,8 @@ class MeasurementResultScreen extends StatelessWidget {
                     ),
                     child: const Row(
                       children: [
-                        Icon(
-                          Icons.auto_awesome,
-                          color: Colors.white,
-                          size: 16,
-                        ),
+                        Icon(Icons.auto_awesome,
+                            color: Colors.white, size: 16),
                         SizedBox(width: 6),
                         Text(
                           "AI Detected",
@@ -102,17 +141,14 @@ class MeasurementResultScreen extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
-                      ),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                   ),
                 ),
 
-                _tag("120 cm", top: 50, right: 60),
-                _tag("85 cm", top: 145, left: 18),
-                _tag("60 cm", bottom: 70, left: 80),
+                _tag("${width.toInt()} cm", top: 50, right: 60),
+                _tag("${height.toInt()} cm", top: 145, left: 18),
+                _tag("${depth.toInt()} cm", bottom: 70, left: 80),
               ],
             ),
           ),
@@ -162,51 +198,12 @@ class MeasurementResultScreen extends StatelessWidget {
 
           const SizedBox(height: 25),
 
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.analytics, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text(
-                      "AI Insights",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 18),
-                Text(
-                  "Detected optimal free space suitable for compact furniture placement and productivity setup.",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 25),
-
           Row(
             children: [
               Expanded(
                 child: _metricCard(
                   "Width",
-                  "120 cm",
+                  "${width.toInt()} cm",
                   Icons.straighten,
                 ),
               ),
@@ -214,7 +211,7 @@ class MeasurementResultScreen extends StatelessWidget {
               Expanded(
                 child: _metricCard(
                   "Height",
-                  "85 cm",
+                  "${height.toInt()} cm",
                   Icons.height,
                 ),
               ),
@@ -228,7 +225,7 @@ class MeasurementResultScreen extends StatelessWidget {
               Expanded(
                 child: _metricCard(
                   "Depth",
-                  "60 cm",
+                  "${depth.toInt()} cm",
                   Icons.square_foot,
                 ),
               ),
@@ -236,7 +233,7 @@ class MeasurementResultScreen extends StatelessWidget {
               Expanded(
                 child: _metricCard(
                   "Area",
-                  "1.02 m²",
+                  "${area.toStringAsFixed(2)} m²",
                   Icons.grid_view,
                 ),
               ),
@@ -245,58 +242,36 @@ class MeasurementResultScreen extends StatelessWidget {
 
           const SizedBox(height: 28),
 
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 12,
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.recommend, color: Colors.indigo),
-                    SizedBox(width: 10),
-                    Text(
-                      "Recommended Usage",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                _recommendationTile(
-                  Icons.table_restaurant,
-                  "Study Table",
-                ),
-                _recommendationTile(
-                  Icons.chair_alt,
-                  "Compact Chair",
-                ),
-                _recommendationTile(
-                  Icons.light,
-                  "Corner Lamp",
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final response = await ApiService.saveScan(
+                      imagePath: widget.imagePath,
+                      width: width,
+                      height: height,
+                      depth: depth,
+                      area: area,
+                    );
+
+                    if (response["statusCode"] == 201) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Scan saved successfully"),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            response["data"]["message"] ??
+                                "Failed to save scan",
+                          ),
+                        ),
+                      );
+                    }
+                  },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: const BorderSide(color: Colors.indigo),
@@ -335,11 +310,7 @@ class MeasurementResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _metricCard(
-    String title,
-    String value,
-    IconData icon,
-  ) {
+  Widget _metricCard(String title, String value, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -364,36 +335,7 @@ class MeasurementResultScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5),
-          Text(
-            title,
-            style: const TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _recommendationTile(
-    IconData icon,
-    String title,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.indigo.shade50,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.indigo),
-          const SizedBox(width: 14),
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(title, style: const TextStyle(color: Colors.grey)),
         ],
       ),
     );
@@ -412,10 +354,7 @@ class MeasurementResultScreen extends StatelessWidget {
       left: left,
       right: right,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 7,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),

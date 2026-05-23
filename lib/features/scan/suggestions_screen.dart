@@ -1,33 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:smart_space/core/services/api_service.dart';
 
-class SuggestionsScreen extends StatelessWidget {
+class SuggestionsScreen extends StatefulWidget {
   const SuggestionsScreen({super.key});
 
   @override
+  State<SuggestionsScreen> createState() => _SuggestionsScreenState();
+}
+
+class _SuggestionsScreenState extends State<SuggestionsScreen> {
+  bool isLoading = true;
+  String roomType = "";
+  List recommendations = [];
+
+  final Map<String, String> productIds = {
+    "Compact Study Table": "cmpi0vop90002xmgmn7msd4rt",
+    "Compact Chair": "cmpi0sbcy0000xmgm6bqn75jd",
+    "Corner Lamp": "cmpi0u26f0001xmgm9fdyuan7",
+    "Bedside Table": "cmpi0vop90002xmgmn7msd4rt",
+    "Compact Wardrobe": "cmpi0u26f0001xmgm9fdyuan7",
+    "Wall Shelf": "cmpi0sbcy0000xmgm6bqn75jd",
+    "Kitchen Storage Rack": "cmpi0vop90002xmgmn7msd4rt",
+    "Compact Utility Shelf": "cmpi0u26f0001xmgm9fdyuan7",
+    "Wall Mounted Organizer": "cmpi0sbcy0000xmgm6bqn75jd",
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecommendations();
+  }
+
+  Future<void> _loadRecommendations() async {
+    final response = await ApiService.getRecommendations();
+
+    if (response["statusCode"] == 200) {
+      setState(() {
+        roomType = response["data"]["roomType"];
+        recommendations = response["data"]["recommendations"];
+        isLoading = false;
+      });
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final products = [
-      {
-        "name": "Compact Study Table",
-        "size": "110 × 55 × 75 cm",
-        "fit": "Perfect Fit",
-        "match": "96%",
-        "icon": Icons.table_bar,
-      },
-      {
-        "name": "Mini Bookshelf",
-        "size": "90 × 35 × 120 cm",
-        "fit": "Good Fit",
-        "match": "89%",
-        "icon": Icons.shelves,
-      },
-      {
-        "name": "Single Sofa Chair",
-        "size": "80 × 75 × 90 cm",
-        "fit": "Fits Well",
-        "match": "84%",
-        "icon": Icons.chair,
-      },
-    ];
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
@@ -52,23 +76,27 @@ class SuggestionsScreen extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.auto_awesome, color: Colors.white, size: 32),
-                SizedBox(height: 14),
+                const Icon(Icons.auto_awesome,
+                    color: Colors.white, size: 32),
+                const SizedBox(height: 14),
                 Text(
-                  "Best Matches for Your Space",
-                  style: TextStyle(
+                  "$roomType Detected",
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  "Products are ranked based on detected dimensions and space suitability.",
-                  style: TextStyle(color: Colors.white70, height: 1.5),
+                const SizedBox(height: 8),
+                const Text(
+                  "Products are recommended based on detected room type and available space.",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -76,18 +104,7 @@ class SuggestionsScreen extends StatelessWidget {
 
           const SizedBox(height: 22),
 
-          Row(
-            children: [
-              _chip("All", true),
-              _chip("Furniture", false),
-              _chip("Storage", false),
-              _chip("Decor", false),
-            ],
-          ),
-
-          const SizedBox(height: 22),
-
-          ...products.map(
+          ...recommendations.map(
             (product) => Container(
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
@@ -110,43 +127,98 @@ class SuggestionsScreen extends StatelessWidget {
                       color: Colors.indigo.shade50,
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Icon(
-                      product["icon"] as IconData,
+                    child: const Icon(
+                      Icons.inventory_2,
                       color: Colors.indigo,
                       size: 34,
                     ),
                   ),
+
                   const SizedBox(width: 15),
+
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                product["name"] as String,
+                                product["name"],
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
                             ),
+
                             IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.bookmark_border),
+                              onPressed: () async {
+                                final productId =
+                                    productIds[
+                                        product["name"]];
+
+                                if (productId == null) {
+                                  return;
+                                }
+
+                                final response =
+                                    await ApiService
+                                        .saveProduct(
+                                  productId: productId,
+                                );
+
+                                if (response[
+                                        "statusCode"] ==
+                                    201) {
+                                  ScaffoldMessenger.of(
+                                          context)
+                                      .showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Product saved successfully",
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(
+                                          context)
+                                      .showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        response["data"]
+                                                [
+                                                "message"] ??
+                                            "Failed to save product",
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.bookmark_border,
+                              ),
                             ),
                           ],
                         ),
+
+                        const SizedBox(height: 6),
+
                         Text(
-                          product["size"] as String,
-                          style: const TextStyle(color: Colors.grey),
+                          product["size"],
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
                         ),
+
                         const SizedBox(height: 10),
+
                         Row(
                           children: [
                             _badge(
-                              product["fit"] as String,
+                              product["fit"],
                               Colors.green,
                             ),
                             const SizedBox(width: 8),
@@ -168,27 +240,15 @@ class SuggestionsScreen extends StatelessWidget {
     );
   }
 
-  Widget _chip(String label, bool active) {
+  static Widget _badge(
+    String label,
+    Color color,
+  ) {
     return Container(
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-      decoration: BoxDecoration(
-        color: active ? Colors.indigo : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 5,
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: active ? Colors.white : Colors.grey,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _badge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(20),

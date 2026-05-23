@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl = "http://10.0.2.2:8000";
+  static String? authToken;
 
   static Future<Map<String, dynamic>> login({
     required String email,
@@ -22,6 +23,10 @@ class ApiService {
     );
 
     final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      authToken = data["token"];
+    }
 
     return {
       "statusCode": response.statusCode,
@@ -48,6 +53,164 @@ class ApiService {
         "password": password,
         "role": role,
       }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> saveScan({
+    required double width,
+    required double height,
+    required double depth,
+    required double area,
+    String? imagePath,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/scans");
+
+    final request = http.MultipartRequest("POST", url);
+
+    request.headers["Authorization"] = "Bearer $authToken";
+
+    request.fields["width"] = width.toString();
+    request.fields["height"] = height.toString();
+    request.fields["depth"] = depth.toString();
+    request.fields["area"] = area.toString();
+
+    if (imagePath != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "image",
+          imagePath,
+        ),
+      );
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+  static Future<Map<String, dynamic>> getMyScans() async {
+    final url = Uri.parse("$baseUrl/api/scans/my-scans");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> saveProduct({
+    required String productId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/saved-products");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "productId": productId,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getSavedProducts() async {
+    final url = Uri.parse("$baseUrl/api/saved-products");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> removeSavedProduct({
+    required String savedProductId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/saved-products/$savedProductId");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> analyzeMeasurement() async {
+    final url = Uri.parse("$baseUrl/api/measurements/analyze");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+  
+  static Future<Map<String, dynamic>> getRecommendations() async {
+    final url = Uri.parse("$baseUrl/api/recommendations");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
     );
 
     final data = jsonDecode(response.body);

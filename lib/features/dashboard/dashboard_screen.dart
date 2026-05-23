@@ -6,6 +6,7 @@ import '../../core/widgets/bottom_nav_item.dart';
 import '../../core/widgets/animated_card.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../core/widgets/glass_card.dart';
+import '../scan/saved_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -279,9 +280,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 active: currentIndex == 2,
                 onTap: () {
                   setState(() => currentIndex = 2);
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SavedScreen(),
+                    ),
+                  );
                 },
               ),
-
               BottomNavItem(
                 icon: Icons.person_outline,
                 label: "Profile",
