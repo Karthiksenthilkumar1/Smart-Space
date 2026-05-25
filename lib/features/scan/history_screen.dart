@@ -6,10 +6,12 @@ class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  State<HistoryScreen> createState() =>
+      _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState
+    extends State<HistoryScreen> {
   bool isLoading = true;
   List scans = [];
 
@@ -20,7 +22,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _loadScans() async {
-    final response = await ApiService.getMyScans();
+    final response =
+        await ApiService.getMyScans();
 
     if (response["statusCode"] == 200) {
       setState(() {
@@ -35,20 +38,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _deleteScan(String id) async {
-    final response = await ApiService.deleteScan(
+    final response =
+        await ApiService.deleteScan(
       scanId: id,
     );
 
     if (response["statusCode"] == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
-          content: Text("Scan deleted successfully"),
+          content: Text(
+            "Scan deleted successfully",
+          ),
         ),
       );
 
       _loadScans();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
             response["data"]["message"] ??
@@ -62,12 +70,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _isValidImageUrl(dynamic url) {
     if (url == null) return false;
 
-    final value = url.toString().trim();
+    final value =
+        url.toString().trim();
 
     if (value.isEmpty) return false;
-    if (!value.startsWith("http")) return false;
 
-    final uri = Uri.tryParse(value);
+    if (!value.startsWith("http")) {
+      return false;
+    }
+
+    final uri =
+        Uri.tryParse(value);
 
     return uri != null &&
         uri.hasScheme &&
@@ -76,15 +89,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _placeholderImage() {
     return Container(
-      width: 58,
-      height: 58,
+      width: 70,
+      height: 70,
       decoration: BoxDecoration(
         color: Colors.indigo.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius:
+            BorderRadius.circular(16),
       ),
       child: const Icon(
         Icons.home_work,
         color: Colors.indigo,
+        size: 30,
       ),
     );
   }
@@ -92,11 +107,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _imageBox(dynamic imageUrl) {
     if (_isValidImageUrl(imageUrl)) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius:
+            BorderRadius.circular(16),
         child: Image.network(
           imageUrl.toString(),
-          width: 58,
-          height: 58,
+          width: 70,
+          height: 70,
           fit: BoxFit.cover,
           errorBuilder:
               (context, error, stackTrace) {
@@ -109,44 +125,77 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return _placeholderImage();
   }
 
+  Color _roomColor(String roomType) {
+    switch (roomType) {
+      case "Bedroom":
+        return Colors.purple;
+
+      case "Kitchen":
+        return Colors.orange;
+
+      case "Living Room":
+        return Colors.green;
+
+      default:
+        return Colors.indigo;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor:
+          const Color(0xFFF8F9FF),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor:
+            Colors.transparent,
         elevation: 0,
         centerTitle: true,
         foregroundColor: Colors.black,
         title: const Text(
           "History",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight:
+                FontWeight.bold,
           ),
         ),
       ),
       body: isLoading
           ? const Center(
-              child: CircularProgressIndicator(),
+              child:
+                  CircularProgressIndicator(),
             )
           : scans.isEmpty
               ? const Center(
-                  child: Text("No saved scans yet"),
+                  child: Text(
+                    "No saved scans yet",
+                  ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding:
+                      const EdgeInsets.all(
+                          16),
                   itemCount: scans.length,
-                  itemBuilder: (context, index) {
-                    final scan = scans[index];
+                  itemBuilder:
+                      (context, index) {
+                    final scan =
+                        scans[index];
 
                     final width =
                         scan["width"] ?? 0;
+
                     final height =
                         scan["height"] ?? 0;
+
                     final depth =
                         scan["depth"] ?? 0;
+
                     final area =
                         scan["area"] ?? 0;
+
+                    final roomType =
+                        scan["roomType"] ??
+                            "Study Room";
 
                     final size =
                         "${width.toString()} × ${height.toString()} × ${depth.toString()} cm";
@@ -156,8 +205,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ScanDetailScreen(
+                            builder:
+                                (context) =>
+                                    ScanDetailScreen(
                               scan: scan,
                             ),
                           ),
@@ -165,21 +215,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       },
                       child: Container(
                         margin:
-                            const EdgeInsets.only(
-                          bottom: 14,
+                            const EdgeInsets
+                                .only(
+                          bottom: 16,
                         ),
                         padding:
-                            const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
+                            const EdgeInsets
+                                .all(14),
+                        decoration:
+                            BoxDecoration(
                           color: Colors.white,
                           borderRadius:
-                              BorderRadius.circular(
-                                  18),
+                              BorderRadius
+                                  .circular(
+                                      22),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black
-                                  .withOpacity(0.03),
-                              blurRadius: 10,
+                              color: Colors
+                                  .black
+                                  .withOpacity(
+                                      0.03),
+                              blurRadius: 12,
                             ),
                           ],
                         ),
@@ -190,63 +246,126 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ),
 
                             const SizedBox(
-                                width: 12),
+                                width: 14),
 
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
                                     CrossAxisAlignment
                                         .start,
-                                mainAxisSize:
-                                    MainAxisSize.min,
                                 children: [
-                                  const Text(
-                                    "Saved Measurement",
-                                    maxLines: 1,
-                                    overflow:
-                                        TextOverflow
-                                            .ellipsis,
-                                    style: TextStyle(
-                                      fontWeight:
-                                          FontWeight
-                                              .bold,
-                                      fontSize: 14,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child:
+                                            const Text(
+                                          "Saved Measurement",
+                                          maxLines:
+                                              1,
+                                          overflow:
+                                              TextOverflow
+                                                  .ellipsis,
+                                          style:
+                                              TextStyle(
+                                            fontWeight:
+                                                FontWeight.bold,
+                                            fontSize:
+                                                15,
+                                          ),
+                                        ),
+                                      ),
+
+                                      Container(
+                                        padding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal:
+                                              10,
+                                          vertical:
+                                              5,
+                                        ),
+                                        decoration:
+                                            BoxDecoration(
+                                          color: _roomColor(
+                                                  roomType)
+                                              .withOpacity(
+                                                  0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                                  20),
+                                        ),
+                                        child:
+                                            Text(
+                                          roomType,
+                                          style:
+                                              TextStyle(
+                                            color:
+                                                _roomColor(
+                                                    roomType),
+                                            fontSize:
+                                                11,
+                                            fontWeight:
+                                                FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
 
                                   const SizedBox(
-                                      height: 4),
+                                      height:
+                                          6),
 
                                   Text(
                                     scan["createdAt"]
                                         .toString()
                                         .substring(
-                                            0, 10),
+                                            0,
+                                            10),
                                     style:
                                         const TextStyle(
                                       color:
                                           Colors.grey,
-                                      fontSize: 11,
+                                      fontSize:
+                                          11,
                                     ),
                                   ),
 
                                   const SizedBox(
-                                      height: 6),
+                                      height:
+                                          8),
 
                                   Text(
-                                    "$size • $area m²",
-                                    maxLines: 1,
+                                    size,
+                                    maxLines:
+                                        1,
                                     overflow:
                                         TextOverflow
                                             .ellipsis,
                                     style:
                                         const TextStyle(
                                       color:
+                                          Colors.black87,
+                                      fontWeight:
+                                          FontWeight.w600,
+                                      fontSize:
+                                          12,
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                      height:
+                                          5),
+
+                                  Text(
+                                    "${area.toString()} m² analyzed space",
+                                    style:
+                                        const TextStyle(
+                                      color:
                                           Colors.indigo,
                                       fontWeight:
-                                          FontWeight
-                                              .w600,
-                                      fontSize: 12,
+                                          FontWeight.w600,
+                                      fontSize:
+                                          12,
                                     ),
                                   ),
                                 ],
@@ -256,11 +375,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             IconButton(
                               onPressed: () {
                                 _deleteScan(
-                                    scan["id"]);
+                                  scan["id"],
+                                );
                               },
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
+                              icon:
+                                  const Icon(
+                                Icons
+                                    .delete_outline,
+                                color:
+                                    Colors.red,
                               ),
                             ),
                           ],

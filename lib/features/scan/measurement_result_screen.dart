@@ -37,7 +37,9 @@ class _MeasurementResultScreenState
 
   Future<void> _loadMeasurement() async {
     final response =
-        await ApiService.analyzeMeasurement();
+      await ApiService.analyzeMeasurement(
+    imagePath: widget.imagePath,
+  );
 
     if (response["statusCode"] == 200) {
       final measurement =
@@ -342,6 +344,7 @@ class _MeasurementResultScreenState
                       height: height,
                       depth: depth,
                       area: area,
+                      roomType: roomType,
                     );
 
                     if (response[

@@ -68,18 +68,30 @@ class ApiService {
     required double height,
     required double depth,
     required double area,
+    required String roomType,
     String? imagePath,
   }) async {
     final url = Uri.parse("$baseUrl/api/scans");
 
     final request = http.MultipartRequest("POST", url);
 
-    request.headers["Authorization"] = "Bearer $authToken";
+    request.headers["Authorization"] =
+        "Bearer $authToken";
 
-    request.fields["width"] = width.toString();
-    request.fields["height"] = height.toString();
-    request.fields["depth"] = depth.toString();
-    request.fields["area"] = area.toString();
+    request.fields["width"] =
+        width.toString();
+
+    request.fields["height"] =
+        height.toString();
+
+    request.fields["depth"] =
+        depth.toString();
+
+    request.fields["area"] =
+        area.toString();
+
+    request.fields["roomType"] =
+        roomType;
 
     if (imagePath != null) {
       request.files.add(
@@ -90,16 +102,24 @@ class ApiService {
       );
     }
 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+    final streamedResponse =
+        await request.send();
 
-    final data = jsonDecode(response.body);
+    final response =
+        await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    final data =
+        jsonDecode(response.body);
 
     return {
-      "statusCode": response.statusCode,
+      "statusCode":
+          response.statusCode,
       "data": data,
     };
   }
+
   static Future<Map<String, dynamic>> getMyScans() async {
     final url = Uri.parse("$baseUrl/api/scans/my-scans");
 
@@ -183,16 +203,27 @@ class ApiService {
     };
   }
 
-  static Future<Map<String, dynamic>> analyzeMeasurement() async {
+  static Future<Map<String, dynamic>> analyzeMeasurement({
+    String? imagePath,
+  }) async {
     final url = Uri.parse("$baseUrl/api/measurements/analyze");
 
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $authToken",
-      },
-    );
+    final request = http.MultipartRequest("POST", url);
+
+    request.headers["Authorization"] = "Bearer $authToken";
+
+    if (imagePath != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "image",
+          imagePath,
+        ),
+      );
+    }
+
+    final streamedResponse = await request.send();
+
+    final response = await http.Response.fromStream(streamedResponse);
 
     final data = jsonDecode(response.body);
 

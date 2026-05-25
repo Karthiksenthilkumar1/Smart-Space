@@ -14,12 +14,26 @@ class ScanDetailScreen extends StatelessWidget {
     return value.startsWith("http");
   }
 
+  Color _roomColor(String roomType) {
+    switch (roomType) {
+      case "Bedroom":
+        return Colors.purple;
+      case "Kitchen":
+        return Colors.orange;
+      case "Living Room":
+        return Colors.green;
+      default:
+        return Colors.indigo;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = scan["width"] ?? 0;
     final height = scan["height"] ?? 0;
     final depth = scan["depth"] ?? 0;
     final area = scan["area"] ?? 0;
+    final roomType = scan["roomType"] ?? "Study Room";
     final date = scan["createdAt"].toString().substring(0, 10);
 
     return Scaffold(
@@ -56,9 +70,43 @@ class ScanDetailScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          Text(
-            "Saved on $date",
-            style: const TextStyle(color: Colors.grey),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: _roomColor(roomType).withOpacity(0.12),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: _roomColor(roomType),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "$roomType Detected",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Saved on $date",
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -79,6 +127,32 @@ class ScanDetailScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(child: _metricCard("Area", "$area m²")),
             ],
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.indigo.shade50,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.psychology, color: Colors.indigo),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "This scan was analyzed using the SpaceFit measurement engine and room-aware recommendation logic.",
+                    style: TextStyle(
+                      color: Colors.indigo,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
