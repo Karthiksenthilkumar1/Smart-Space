@@ -227,4 +227,25 @@ class ApiService {
       "data": data,
     };
   }
+
+  static Future<Map<String, dynamic>> deleteScan({
+    required String scanId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/scans/$scanId");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
 }
