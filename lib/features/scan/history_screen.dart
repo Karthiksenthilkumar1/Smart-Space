@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_space/core/services/api_service.dart';
+import 'scan_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -150,107 +151,120 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     final size =
                         "${width.toString()} × ${height.toString()} × ${depth.toString()} cm";
 
-                    return Container(
-                      margin:
-                          const EdgeInsets.only(
-                        bottom: 14,
-                      ),
-                      padding:
-                          const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.circular(
-                                18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withOpacity(0.03),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          _imageBox(
-                            scan["imageUrl"],
-                          ),
-
-                          const SizedBox(
-                              width: 12),
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment
-                                      .start,
-                              mainAxisSize:
-                                  MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  "Saved Measurement",
-                                  maxLines: 1,
-                                  overflow:
-                                      TextOverflow
-                                          .ellipsis,
-                                  style: TextStyle(
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-
-                                const SizedBox(
-                                    height: 4),
-
-                                Text(
-                                  scan["createdAt"]
-                                      .toString()
-                                      .substring(
-                                          0, 10),
-                                  style:
-                                      const TextStyle(
-                                    color:
-                                        Colors.grey,
-                                    fontSize: 11,
-                                  ),
-                                ),
-
-                                const SizedBox(
-                                    height: 6),
-
-                                Text(
-                                  "$size • $area m²",
-                                  maxLines: 1,
-                                  overflow:
-                                      TextOverflow
-                                          .ellipsis,
-                                  style:
-                                      const TextStyle(
-                                    color:
-                                        Colors.indigo,
-                                    fontWeight:
-                                        FontWeight
-                                            .w600,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ScanDetailScreen(
+                              scan: scan,
                             ),
                           ),
-
-                          IconButton(
-                            onPressed: () {
-                              _deleteScan(
-                                  scan["id"]);
-                            },
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
+                        );
+                      },
+                      child: Container(
+                        margin:
+                            const EdgeInsets.only(
+                          bottom: 14,
+                        ),
+                        padding:
+                            const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.circular(
+                                  18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black
+                                  .withOpacity(0.03),
+                              blurRadius: 10,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            _imageBox(
+                              scan["imageUrl"],
+                            ),
+
+                            const SizedBox(
+                                width: 12),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
+                                mainAxisSize:
+                                    MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    "Saved Measurement",
+                                    maxLines: 1,
+                                    overflow:
+                                        TextOverflow
+                                            .ellipsis,
+                                    style: TextStyle(
+                                      fontWeight:
+                                          FontWeight
+                                              .bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                      height: 4),
+
+                                  Text(
+                                    scan["createdAt"]
+                                        .toString()
+                                        .substring(
+                                            0, 10),
+                                    style:
+                                        const TextStyle(
+                                      color:
+                                          Colors.grey,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                      height: 6),
+
+                                  Text(
+                                    "$size • $area m²",
+                                    maxLines: 1,
+                                    overflow:
+                                        TextOverflow
+                                            .ellipsis,
+                                    style:
+                                        const TextStyle(
+                                      color:
+                                          Colors.indigo,
+                                      fontWeight:
+                                          FontWeight
+                                              .w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            IconButton(
+                              onPressed: () {
+                                _deleteScan(
+                                    scan["id"]);
+                              },
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

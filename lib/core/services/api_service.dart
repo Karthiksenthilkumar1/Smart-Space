@@ -207,9 +207,12 @@ class ApiService {
     required double height,
     required double depth,
     required double area,
+    required String roomType,
   }) async {
+    final encodedRoomType = Uri.encodeComponent(roomType);
+
     final url = Uri.parse(
-      "$baseUrl/api/recommendations?width=$width&height=$height&depth=$depth&area=$area",
+      "$baseUrl/api/recommendations?width=$width&height=$height&depth=$depth&area=$area&roomType=$encodedRoomType",
     );
 
     final response = await http.get(
@@ -239,6 +242,49 @@ class ApiService {
         "Content-Type": "application/json",
         "Authorization": "Bearer $authToken",
       },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getProfile() async {
+    final url = Uri.parse("$baseUrl/api/auth/me");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateProfile({
+    required String name,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/auth/profile");
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "name": name,
+      }),
     );
 
     final data = jsonDecode(response.body);

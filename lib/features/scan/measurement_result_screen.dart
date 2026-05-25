@@ -25,6 +25,10 @@ class _MeasurementResultScreenState
   double depth = 0;
   double area = 0;
 
+  String roomType = "Study Room";
+  int confidence = 94;
+  String method = "";
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +48,17 @@ class _MeasurementResultScreenState
         height = measurement["height"].toDouble();
         depth = measurement["depth"].toDouble();
         area = measurement["area"].toDouble();
+
+        roomType =
+            measurement["roomType"] ??
+                "Study Room";
+
+        confidence =
+            measurement["confidence"] ?? 94;
+
+        method =
+            measurement["method"] ?? "";
+
         isLoading = false;
       });
     } else {
@@ -128,17 +143,17 @@ class _MeasurementResultScreenState
                       borderRadius:
                           BorderRadius.circular(30),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.auto_awesome,
                           color: Colors.white,
                           size: 16,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          "AI Detected",
-                          style: TextStyle(
+                          "$roomType",
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight:
                                 FontWeight.bold,
@@ -203,9 +218,9 @@ class _MeasurementResultScreenState
                 ),
               ],
             ),
-            child: const Row(
+            child: Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   backgroundColor:
                       Color(0xFFEFF1FF),
                   child: Icon(
@@ -213,23 +228,23 @@ class _MeasurementResultScreenState
                     color: Colors.indigo,
                   ),
                 ),
-                SizedBox(width: 14),
+                const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Space Analysis Complete",
-                      style: TextStyle(
+                      "$roomType Analysis Complete",
+                      style: const TextStyle(
                         fontWeight:
                             FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "AI confidence: 94%",
-                      style: TextStyle(
+                      "AI confidence: $confidence%",
+                      style: const TextStyle(
                         color: Colors.grey,
                       ),
                     ),
@@ -281,6 +296,35 @@ class _MeasurementResultScreenState
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.indigo.shade50,
+              borderRadius:
+                  BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.psychology,
+                  color: Colors.indigo,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "Analysis Method: $method",
+                    style: const TextStyle(
+                      color: Colors.indigo,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 28),
@@ -361,6 +405,7 @@ class _MeasurementResultScreenState
                           height: height,
                           depth: depth,
                           area: area,
+                          roomType: roomType,
                         ),
                       ),
                     );

@@ -1,10 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:smart_space/core/services/api_service.dart';
+import '../scan/history_screen.dart';
+import '../scan/saved_screen.dart';
+import 'edit_profile_screen.dart';
+import 'settings_screen.dart';
+import 'help_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool isLoading = true;
+  Map<String, dynamic>? user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final response = await ApiService.getProfile();
+
+    if (response["statusCode"] == 200) {
+      setState(() {
+        user = response["data"]["user"];
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  String _getInitial() {
+    final name = user?["name"] ?? "U";
+    return name.toString().isNotEmpty
+        ? name.toString()[0].toUpperCase()
+        : "U";
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final name = user?["name"] ?? "User";
+    final email = user?["email"] ?? "user@spacefit.com";
+    final role = user?["role"] ?? "USER";
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
       appBar: AppBar(
@@ -14,80 +60,187 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const CircleAvatar(
-            radius: 45,
-            backgroundColor: Colors.indigo,
-            child: Icon(Icons.person, size: 45, color: Colors.white),
-          ),
-          const SizedBox(height: 15),
-          const Center(
-            child: Text(
-              "Karthik S",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const Center(
-            child: Text(
-              "karthiksenthilkumar2006@gmail.com",
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-          const SizedBox(height: 30),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                CircleAvatar(
+                  radius: 45,
+                  backgroundColor: Colors.indigo,
+                  child: Text(
+                    _getInitial(),
+                    style: const TextStyle(
+                      fontSize: 38,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
 
-          _tile(Icons.straighten, "Measurement Unit", "Centimeters / Meters"),
-          _tile(Icons.settings, "Settings", "App preferences"),
-          _tile(Icons.help_outline, "Help & Support", "Get assistance"),
-          _tile(Icons.info_outline, "About App", "SpaceFit v1.0"),
+                const SizedBox(height: 16),
 
-          const SizedBox(height: 25),
+                Center(
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
 
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+                const SizedBox(height: 5),
+
+                Center(
+                  child: Text(
+                    email,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.indigo.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      role,
+                      style: const TextStyle(
+                        color: Colors.indigo,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                _profileTile(
+                  Icons.person_outline,
+                  "Edit Profile",
+                  onTap: () async {
+                    final updated = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditProfileScreen(
+                          name: name,
+                          email: email,
+                        ),
+                      ),
+                    );
+
+                    if (updated == true) {
+                      _loadProfile();
+                    }
+                  },
+                ),
+
+                _profileTile(
+                  Icons.history,
+                  "Scan History",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                _profileTile(
+                  Icons.bookmark_border,
+                  "Saved Products",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SavedScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                _profileTile(
+                  Icons.settings_outlined,
+                  "Settings",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                _profileTile(
+                  Icons.help_outline,
+                  "Help & Support",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 25),
+
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ApiService.authToken = null;
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text("Logout"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                  ),
+                ),
+              ],
             ),
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-            icon: const Icon(Icons.logout),
-            label: const Text("Logout"),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _tile(IconData icon, String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.indigo),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(color: Colors.grey)),
-              ],
+  Widget _profileTile(
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.indigo),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, size: 16),
-        ],
+            const Icon(Icons.arrow_forward_ios, size: 14),
+          ],
+        ),
       ),
     );
   }
