@@ -6,14 +6,18 @@ import 'package:smart_space/core/services/api_service.dart';
 class MeasurementResultScreen extends StatefulWidget {
   final String? imagePath;
 
-  const MeasurementResultScreen({super.key, this.imagePath});
+  const MeasurementResultScreen({
+    super.key,
+    this.imagePath,
+  });
 
   @override
   State<MeasurementResultScreen> createState() =>
       _MeasurementResultScreenState();
 }
 
-class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
+class _MeasurementResultScreenState
+    extends State<MeasurementResultScreen> {
   bool isLoading = true;
 
   double width = 0;
@@ -28,10 +32,12 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
   }
 
   Future<void> _loadMeasurement() async {
-    final response = await ApiService.analyzeMeasurement();
+    final response =
+        await ApiService.analyzeMeasurement();
 
     if (response["statusCode"] == 200) {
-      final measurement = response["data"]["measurement"];
+      final measurement =
+          response["data"]["measurement"];
 
       setState(() {
         width = measurement["width"].toDouble();
@@ -50,7 +56,9 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFF8F9FF),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
@@ -63,7 +71,9 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
         foregroundColor: Colors.black,
         title: const Text(
           "AI Measurement Result",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: ListView(
@@ -108,24 +118,30 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
                   top: 18,
                   right: 18,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding:
+                        const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.indigo,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius:
+                          BorderRadius.circular(30),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.auto_awesome,
-                            color: Colors.white, size: 16),
+                        Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           "AI Detected",
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight:
+                                FontWeight.bold,
                           ),
                         ),
                       ],
@@ -140,15 +156,33 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
                   bottom: 60,
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius:
+                          BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
 
-                _tag("${width.toInt()} cm", top: 50, right: 60),
-                _tag("${height.toInt()} cm", top: 145, left: 18),
-                _tag("${depth.toInt()} cm", bottom: 70, left: 80),
+                _tag(
+                  "${width.toInt()} cm",
+                  top: 50,
+                  right: 60,
+                ),
+
+                _tag(
+                  "${height.toInt()} cm",
+                  top: 145,
+                  left: 18,
+                ),
+
+                _tag(
+                  "${depth.toInt()} cm",
+                  bottom: 70,
+                  left: 80,
+                ),
               ],
             ),
           ),
@@ -160,7 +194,8 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius:
+                  BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
@@ -171,24 +206,32 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
             child: const Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Color(0xFFEFF1FF),
-                  child: Icon(Icons.verified, color: Colors.indigo),
+                  backgroundColor:
+                      Color(0xFFEFF1FF),
+                  child: Icon(
+                    Icons.verified,
+                    color: Colors.indigo,
+                  ),
                 ),
                 SizedBox(width: 14),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Space Analysis Complete",
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight:
+                            FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
                       "AI confidence: 94%",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -247,60 +290,99 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () async {
-                    final response = await ApiService.saveScan(
-                      imagePath: widget.imagePath,
+                    final response =
+                        await ApiService.saveScan(
+                      imagePath:
+                          widget.imagePath,
                       width: width,
                       height: height,
                       depth: depth,
                       area: area,
                     );
 
-                    if (response["statusCode"] == 201) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                    if (response[
+                            "statusCode"] ==
+                        201) {
+                      ScaffoldMessenger.of(
+                              context)
+                          .showSnackBar(
                         const SnackBar(
-                          content: Text("Scan saved successfully"),
+                          content: Text(
+                            "Scan saved successfully",
+                          ),
                         ),
                       );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      ScaffoldMessenger.of(
+                              context)
+                          .showSnackBar(
                         SnackBar(
                           content: Text(
-                            response["data"]["message"] ??
+                            response["data"]
+                                    ["message"] ??
                                 "Failed to save scan",
                           ),
                         ),
                       );
                     }
                   },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Colors.indigo),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                  style:
+                      OutlinedButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(
+                      vertical: 16,
+                    ),
+                    side: const BorderSide(
+                      color: Colors.indigo,
+                    ),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                              18),
                     ),
                   ),
-                  child: const Text("Save Result"),
+                  child:
+                      const Text("Save Result"),
                 ),
               ),
+
               const SizedBox(width: 14),
+
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SuggestionsScreen(),
+                        builder: (context) =>
+                            SuggestionsScreen(
+                          width: width,
+                          height: height,
+                          depth: depth,
+                          area: area,
+                        ),
                       ),
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                  style:
+                      ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.indigo,
+                    padding:
+                        const EdgeInsets.symmetric(
+                      vertical: 16,
+                    ),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                              18),
                     ),
                   ),
-                  child: const Text("View Suggestions"),
+                  child: const Text(
+                    "View Suggestions",
+                  ),
                 ),
               ),
             ],
@@ -310,12 +392,17 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
     );
   }
 
-  Widget _metricCard(String title, String value, IconData icon) {
+  Widget _metricCard(
+    String title,
+    String value,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius:
+            BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -335,7 +422,11 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
             ),
           ),
           const SizedBox(height: 5),
-          Text(title, style: const TextStyle(color: Colors.grey)),
+          Text(
+            title,
+            style:
+                const TextStyle(color: Colors.grey),
+          ),
         ],
       ),
     );
@@ -354,10 +445,15 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
       left: left,
       right: right,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding:
+            const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 7,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius:
+              BorderRadius.circular(22),
         ),
         child: Text(
           text,

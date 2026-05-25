@@ -201,9 +201,16 @@ class ApiService {
       "data": data,
     };
   }
-  
-  static Future<Map<String, dynamic>> getRecommendations() async {
-    final url = Uri.parse("$baseUrl/api/recommendations");
+
+  static Future<Map<String, dynamic>> getRecommendations({
+    required double width,
+    required double height,
+    required double depth,
+    required double area,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/api/recommendations?width=$width&height=$height&depth=$depth&area=$area",
+    );
 
     final response = await http.get(
       url,
