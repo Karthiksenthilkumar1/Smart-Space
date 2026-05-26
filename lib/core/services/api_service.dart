@@ -330,4 +330,55 @@ class ApiService {
       "data": data,
     };
   }
+
+  static Future<Map<String, dynamic>> getProducts() async {
+    final url = Uri.parse("$baseUrl/api/products");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> createProduct({
+    required String name,
+    required String description,
+    required String dimensions,
+    required String category,
+    required double price,
+    required String imageUrl,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/products");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "name": name,
+        "description": description,
+        "dimensions": dimensions,
+        "category": category,
+        "price": price,
+        "imageUrl": imageUrl,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
 }
