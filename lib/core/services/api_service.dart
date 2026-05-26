@@ -205,12 +205,17 @@ class ApiService {
 
   static Future<Map<String, dynamic>> analyzeMeasurement({
     String? imagePath,
+    double? referenceWidth,
   }) async {
     final url = Uri.parse("$baseUrl/api/measurements/analyze");
 
     final request = http.MultipartRequest("POST", url);
 
     request.headers["Authorization"] = "Bearer $authToken";
+
+    if (referenceWidth != null) {
+      request.fields["referenceWidth"] = referenceWidth.toString();
+    }
 
     if (imagePath != null) {
       request.files.add(

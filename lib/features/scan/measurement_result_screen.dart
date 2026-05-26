@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'suggestions_screen.dart';
 import 'package:smart_space/core/services/api_service.dart';
+import 'manual_measurement_screen.dart';
 
 class MeasurementResultScreen extends StatefulWidget {
   final String? imagePath;
@@ -29,6 +30,11 @@ class _MeasurementResultScreenState
   int confidence = 94;
   String method = "";
 
+  final TextEditingController scaleController =
+      TextEditingController();
+
+  double referenceWidth = 80;
+
   @override
   void initState() {
     super.initState();
@@ -37,19 +43,27 @@ class _MeasurementResultScreenState
 
   Future<void> _loadMeasurement() async {
     final response =
-      await ApiService.analyzeMeasurement(
-    imagePath: widget.imagePath,
-  );
+        await ApiService.analyzeMeasurement(
+      imagePath: widget.imagePath,
+      referenceWidth: referenceWidth,
+    );
 
     if (response["statusCode"] == 200) {
       final measurement =
           response["data"]["measurement"];
 
       setState(() {
-        width = measurement["width"].toDouble();
-        height = measurement["height"].toDouble();
-        depth = measurement["depth"].toDouble();
-        area = measurement["area"].toDouble();
+        width =
+            measurement["width"].toDouble();
+
+        height =
+            measurement["height"].toDouble();
+
+        depth =
+            measurement["depth"].toDouble();
+
+        area =
+            measurement["area"].toDouble();
 
         roomType =
             measurement["roomType"] ??
@@ -72,24 +86,29 @@ class _MeasurementResultScreenState
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFFF8F9FF),
+        backgroundColor:
+            Color(0xFFF8F9FF),
         body: Center(
-          child: CircularProgressIndicator(),
+          child:
+              CircularProgressIndicator(),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor:
+          const Color(0xFFF8F9FF),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor:
+            Colors.transparent,
         elevation: 0,
         centerTitle: true,
         foregroundColor: Colors.black,
         title: const Text(
           "AI Measurement Result",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight:
+                FontWeight.bold,
           ),
         ),
       ),
@@ -99,36 +118,53 @@ class _MeasurementResultScreenState
           Container(
             height: 320,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
+              borderRadius:
+                  BorderRadius.circular(
+                      28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.indigo.withOpacity(0.08),
+                  color: Colors.indigo
+                      .withOpacity(0.08),
                   blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  offset:
+                      const Offset(0, 10),
                 ),
               ],
             ),
             child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: widget.imagePath != null
-                      ? Image.file(
-                          File(widget.imagePath!),
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          color: Colors.indigo.shade50,
-                          child: const Center(
-                            child: Icon(
-                              Icons.home_work,
-                              size: 120,
-                              color: Colors.indigo,
+                  borderRadius:
+                      BorderRadius.circular(
+                          28),
+                  child:
+                      widget.imagePath !=
+                              null
+                          ? Image.file(
+                              File(widget
+                                  .imagePath!),
+                              width: double
+                                  .infinity,
+                              height: double
+                                  .infinity,
+                              fit:
+                                  BoxFit.cover,
+                            )
+                          : Container(
+                              color: Colors
+                                  .indigo
+                                  .shade50,
+                              child:
+                                  const Center(
+                                child: Icon(
+                                  Icons
+                                      .home_work,
+                                  size: 120,
+                                  color: Colors
+                                      .indigo,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
                 ),
 
                 Positioned(
@@ -136,29 +172,40 @@ class _MeasurementResultScreenState
                   right: 18,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(
+                        const EdgeInsets
+                            .symmetric(
                       horizontal: 14,
                       vertical: 8,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo,
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          Colors.indigo,
                       borderRadius:
-                          BorderRadius.circular(30),
+                          BorderRadius
+                              .circular(
+                                  30),
                     ),
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.auto_awesome,
-                          color: Colors.white,
+                          Icons
+                              .auto_awesome,
+                          color:
+                              Colors.white,
                           size: 16,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(
+                            width: 6),
                         Text(
-                          "$roomType",
-                          style: const TextStyle(
-                            color: Colors.white,
+                          roomType,
+                          style:
+                              const TextStyle(
+                            color: Colors
+                                .white,
                             fontWeight:
-                                FontWeight.bold,
+                                FontWeight
+                                    .bold,
                           ),
                         ),
                       ],
@@ -172,11 +219,15 @@ class _MeasurementResultScreenState
                   right: 40,
                   bottom: 60,
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration:
+                        BoxDecoration(
                       borderRadius:
-                          BorderRadius.circular(18),
+                          BorderRadius
+                              .circular(
+                                  18),
                       border: Border.all(
-                        color: Colors.white,
+                        color:
+                            Colors.white,
                         width: 2,
                       ),
                     ),
@@ -208,14 +259,17 @@ class _MeasurementResultScreenState
 
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding:
+                const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius:
-                  BorderRadius.circular(20),
+                  BorderRadius.circular(
+                      20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black
+                      .withOpacity(0.04),
                   blurRadius: 12,
                 ),
               ],
@@ -227,26 +281,31 @@ class _MeasurementResultScreenState
                       Color(0xFFEFF1FF),
                   child: Icon(
                     Icons.verified,
-                    color: Colors.indigo,
+                    color:
+                        Colors.indigo,
                   ),
                 ),
                 const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      CrossAxisAlignment
+                          .start,
                   children: [
                     Text(
                       "$roomType Analysis Complete",
-                      style: const TextStyle(
+                      style:
+                          const TextStyle(
                         fontWeight:
                             FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(
+                        height: 4),
                     Text(
                       "AI confidence: $confidence%",
-                      style: const TextStyle(
+                      style:
+                          const TextStyle(
                         color: Colors.grey,
                       ),
                     ),
@@ -303,29 +362,137 @@ class _MeasurementResultScreenState
           const SizedBox(height: 12),
 
           Container(
-            padding: const EdgeInsets.all(16),
+            padding:
+                const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.indigo.shade50,
+              color:
+                  Colors.indigo.shade50,
               borderRadius:
-                  BorderRadius.circular(18),
+                  BorderRadius.circular(
+                      18),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.psychology,
-                  color: Colors.indigo,
+                  color:
+                      Colors.indigo,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     "Analysis Method: $method",
-                    style: const TextStyle(
-                      color: Colors.indigo,
-                      fontWeight: FontWeight.w600,
+                    style:
+                        const TextStyle(
+                      color:
+                          Colors.indigo,
+                      fontWeight:
+                          FontWeight.w600,
                     ),
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          Container(
+            padding:
+                const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(
+                      20),
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                const Text(
+                  "Reference Scale",
+                  style: TextStyle(
+                    fontWeight:
+                        FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  "Enter a known object width for realistic measurements.",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    height: 1.4,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextField(
+                  controller:
+                      scaleController,
+                  keyboardType:
+                      TextInputType
+                          .number,
+                  decoration:
+                      InputDecoration(
+                    hintText:
+                        "Example: Door width = 80 cm",
+                    filled: true,
+                    fillColor:
+                        const Color(
+                            0xFFF5F6FA),
+                    border:
+                        OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                                  16),
+                      borderSide:
+                          BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    referenceWidth =
+                        double.tryParse(
+                              value,
+                            ) ??
+                            80;
+                  },
+                ),
+
+                const SizedBox(height: 14),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: widget.imagePath == null
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManualMeasurementScreen(
+                            imagePath: widget.imagePath!,
+                          ),
+                        ),
+                      );
+                    },
+              icon: const Icon(Icons.touch_app),
+              label: const Text("MANUAL MEASURE"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+              ),
             ),
           ),
 
@@ -337,21 +504,23 @@ class _MeasurementResultScreenState
                 child: OutlinedButton(
                   onPressed: () async {
                     final response =
-                        await ApiService.saveScan(
+                        await ApiService
+                            .saveScan(
                       imagePath:
                           widget.imagePath,
                       width: width,
                       height: height,
                       depth: depth,
                       area: area,
-                      roomType: roomType,
+                      roomType:
+                          roomType,
                     );
 
                     if (response[
                             "statusCode"] ==
                         201) {
-                      ScaffoldMessenger.of(
-                              context)
+                      ScaffoldMessenger
+                              .of(context)
                           .showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -360,13 +529,14 @@ class _MeasurementResultScreenState
                         ),
                       );
                     } else {
-                      ScaffoldMessenger.of(
-                              context)
+                      ScaffoldMessenger
+                              .of(context)
                           .showSnackBar(
                         SnackBar(
                           content: Text(
                             response["data"]
-                                    ["message"] ??
+                                    [
+                                    "message"] ??
                                 "Failed to save scan",
                           ),
                         ),
@@ -374,23 +544,29 @@ class _MeasurementResultScreenState
                     }
                   },
                   style:
-                      OutlinedButton.styleFrom(
+                      OutlinedButton
+                          .styleFrom(
                     padding:
-                        const EdgeInsets.symmetric(
+                        const EdgeInsets
+                            .symmetric(
                       vertical: 16,
                     ),
-                    side: const BorderSide(
-                      color: Colors.indigo,
+                    side:
+                        const BorderSide(
+                      color:
+                          Colors.indigo,
                     ),
                     shape:
                         RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(
-                              18),
+                          BorderRadius
+                              .circular(
+                                  18),
                     ),
                   ),
-                  child:
-                      const Text("Save Result"),
+                  child: const Text(
+                    "Save Result",
+                  ),
                 ),
               ),
 
@@ -402,30 +578,35 @@ class _MeasurementResultScreenState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            SuggestionsScreen(
+                        builder:
+                            (context) =>
+                                SuggestionsScreen(
                           width: width,
                           height: height,
                           depth: depth,
                           area: area,
-                          roomType: roomType,
+                          roomType:
+                              roomType,
                         ),
                       ),
                     );
                   },
                   style:
-                      ElevatedButton.styleFrom(
+                      ElevatedButton
+                          .styleFrom(
                     backgroundColor:
                         Colors.indigo,
                     padding:
-                        const EdgeInsets.symmetric(
+                        const EdgeInsets
+                            .symmetric(
                       vertical: 16,
                     ),
                     shape:
                         RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(
-                              18),
+                          BorderRadius
+                              .circular(
+                                  18),
                     ),
                   ),
                   child: const Text(
@@ -453,27 +634,33 @@ class _MeasurementResultScreenState
             BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black
+                .withOpacity(0.04),
             blurRadius: 10,
           ),
         ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.indigo),
+          Icon(
+            icon,
+            color: Colors.indigo,
+          ),
           const SizedBox(height: 12),
           Text(
             value,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight:
+                  FontWeight.bold,
               fontSize: 20,
             ),
           ),
           const SizedBox(height: 5),
           Text(
             title,
-            style:
-                const TextStyle(color: Colors.grey),
+            style: const TextStyle(
+              color: Colors.grey,
+            ),
           ),
         ],
       ),
@@ -507,7 +694,8 @@ class _MeasurementResultScreenState
           text,
           style: const TextStyle(
             color: Colors.indigo,
-            fontWeight: FontWeight.bold,
+            fontWeight:
+                FontWeight.bold,
           ),
         ),
       ),
