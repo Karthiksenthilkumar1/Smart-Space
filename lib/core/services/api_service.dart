@@ -1,8 +1,14 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://10.0.2.2:8000";
+  static const String emulatorUrl = "http://10.0.2.2:8000";
+
+  static const String localNetworkUrl =
+      "http://172.30.4.77:8000";
+
+  static String baseUrl = emulatorUrl;
   static String? authToken;
 
   static Future<Map<String, dynamic>> login({
@@ -356,22 +362,108 @@ class ApiService {
     required String category,
     required double price,
     required String imageUrl,
+    String? imagePath,
   }) async {
     final url = Uri.parse("$baseUrl/api/products");
 
-    final response = await http.post(
+    final request = http.MultipartRequest("POST", url);
+
+    request.fields["name"] = name;
+    request.fields["description"] = description;
+    request.fields["dimensions"] = dimensions;
+    request.fields["category"] = category;
+    request.fields["price"] = price.toString();
+    request.fields["imageUrl"] = imageUrl;
+
+    if (imagePath != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "image",
+          imagePath,
+        ),
+      );
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteProduct({
+    required String productId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/products/$productId");
+
+    final response = await http.delete(
       url,
       headers: {
         "Content-Type": "application/json",
       },
-      body: jsonEncode({
-        "name": name,
-        "description": description,
-        "dimensions": dimensions,
-        "category": category,
-        "price": price,
-        "imageUrl": imageUrl,
-      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateProduct({
+    required String productId,
+    required String name,
+    required String description,
+    required String dimensions,
+    required String category,
+    required double price,
+    required String imageUrl,
+    String? imagePath,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/products/$productId");
+
+    final request = http.MultipartRequest("PUT", url);
+
+    request.fields["name"] = name;
+    request.fields["description"] = description;
+    request.fields["dimensions"] = dimensions;
+    request.fields["category"] = category;
+    request.fields["price"] = price.toString();
+    request.fields["imageUrl"] = imageUrl;
+
+    if (imagePath != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "image",
+          imagePath,
+        ),
+      );
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getAnalytics() async {
+    final url = Uri.parse("$baseUrl/api/analytics");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
     );
 
     final data = jsonDecode(response.body);
