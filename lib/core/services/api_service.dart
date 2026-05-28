@@ -8,7 +8,7 @@ class ApiService {
   static const String localNetworkUrl =
       "http://172.30.4.81:8000";
 
-  static String baseUrl = localNetworkUrl;
+  static String baseUrl = emulatorUrl;
   static String? authToken;
 
   static Future<Map<String, dynamic>> login({
@@ -857,6 +857,67 @@ static Future<Map<String, dynamic>> updateVendor({
       "status": status,
       "website": website,
     }),
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> getProductSyncs() async {
+  final url = Uri.parse("$baseUrl/api/admin/product-syncs");
+
+  final response = await http.get(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> createProductSync({
+  required String vendorId,
+}) async {
+  final url = Uri.parse("$baseUrl/api/admin/product-syncs");
+
+  final response = await http.post(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "vendorId": vendorId,
+    }),
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> deleteProductSync({
+  required String syncId,
+}) async {
+  final url = Uri.parse("$baseUrl/api/admin/product-syncs/$syncId");
+
+  final response = await http.delete(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
   );
 
   final data = jsonDecode(response.body);
