@@ -7,6 +7,7 @@ import '../../core/widgets/animated_card.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../core/widgets/glass_card.dart';
 import '../scan/saved_screen.dart';
+import '../user/user_notifications_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -90,9 +91,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
 
-                  const Icon(
-                    Icons.notifications_none,
-                    size: 28,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        AppRoutes.fadeSlide(
+                          const UserNotificationsScreen(),
+                        ),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.notifications_none,
+                      size: 28,
+                    ),
                   ),
                 ],
               ),

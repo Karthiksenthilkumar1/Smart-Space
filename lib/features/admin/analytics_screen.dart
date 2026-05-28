@@ -244,6 +244,103 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                 const SizedBox(height: 25),
 
+                const SizedBox(height: 30),
+
+                const Text(
+                  "Top Saved Products",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                ...(analytics["topSavedProducts"] as List).map(
+                  (product) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: product["imageUrl"] != null &&
+                                    product["imageUrl"]
+                                        .toString()
+                                        .startsWith("http")
+                                ? Image.network(
+                                    product["imageUrl"],
+                                    height: 54,
+                                    width: 54,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    height: 54,
+                                    width: 54,
+                                    color: Colors.indigo.shade50,
+                                    child: const Icon(
+                                      Icons.inventory_2,
+                                      color: Colors.indigo,
+                                    ),
+                                  ),
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product["name"],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  product["category"],
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              "${product["saveCount"]} saves",
+                              style: const TextStyle(
+                                color: Colors.indigo,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 25),
+                
                 const Text(
                   "Recent Activity",
                   style: TextStyle(

@@ -6,9 +6,9 @@ class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
   static const String localNetworkUrl =
-      "http://172.30.4.77:8000";
+      "http://172.30.4.81:8000";
 
-  static String baseUrl = emulatorUrl;
+  static String baseUrl = localNetworkUrl;
   static String? authToken;
 
   static Future<Map<String, dynamic>> login({
@@ -473,4 +473,397 @@ class ApiService {
       "data": data,
     };
   }
+
+  static Future<Map<String, dynamic>> getScanLogs() async {
+    final url = Uri.parse("$baseUrl/api/admin/scan-logs");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getCategories() async {
+    final url = Uri.parse("$baseUrl/api/admin/categories");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> createCategory({
+    required String category,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/categories");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "category": category,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteCategory({
+    required String categoryId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/categories/$categoryId");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getCategoryProducts({
+    required String categoryId,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/api/admin/categories/$categoryId/products",
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateCategory({
+    required String categoryId,
+    required String name,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/categories/$categoryId");
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "name": name,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getRecommendationRules() async {
+    final url = Uri.parse("$baseUrl/api/admin/recommendation-rules");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> createRecommendationRule({
+    required String roomType,
+    required String category,
+    required int priority,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/recommendation-rules");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "roomType": roomType,
+        "category": category,
+        "priority": priority,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteRecommendationRule({
+    required String ruleId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/recommendation-rules/$ruleId");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateRecommendationRule({
+    required String ruleId,
+    required String roomType,
+    required String category,
+    required int priority,
+    required bool isActive,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/recommendation-rules/$ruleId");
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "roomType": roomType,
+        "category": category,
+        "priority": priority,
+        "isActive": isActive,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getNotifications() async {
+    final url = Uri.parse("$baseUrl/api/admin/notifications");
+
+    final response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> createNotification({
+    required String title,
+    required String message,
+    required String targetRole,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/notifications");
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "title": title,
+        "message": message,
+        "targetRole": targetRole,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteNotification({
+    required String notificationId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/notifications/$notificationId");
+
+    final response = await http.delete(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>>
+    getUserNotifications() async {
+
+  final url = Uri.parse("$baseUrl/api/notifications");
+
+  final response = await http.get(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $authToken",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> getVendors() async {
+  final url = Uri.parse("$baseUrl/api/admin/vendors");
+
+  final response = await http.get(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> createVendor({
+  required String name,
+  required String status,
+  required String website,
+}) async {
+  final url = Uri.parse("$baseUrl/api/admin/vendors");
+
+  final response = await http.post(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "name": name,
+      "status": status,
+      "website": website,
+    }),
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> deleteVendor({
+  required String vendorId,
+}) async {
+  final url = Uri.parse("$baseUrl/api/admin/vendors/$vendorId");
+
+  final response = await http.delete(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> updateVendor({
+  required String vendorId,
+  required String name,
+  required String status,
+  required String website,
+}) async {
+  final url = Uri.parse("$baseUrl/api/admin/vendors/$vendorId");
+
+  final response = await http.put(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "name": name,
+      "status": status,
+      "website": website,
+    }),
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
 }

@@ -33,6 +33,22 @@ class _SavedScreenState extends State<SavedScreen> {
     }
   }
 
+  Widget _fallbackImage() {
+    return Container(
+      height: 72,
+      width: 72,
+      decoration: BoxDecoration(
+        color: Colors.indigo.shade50,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Icon(
+        Icons.inventory_2,
+        color: Colors.indigo,
+        size: 34,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,19 +94,29 @@ class _SavedScreenState extends State<SavedScreen> {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              height: 72,
-                              width: 72,
-                              decoration: BoxDecoration(
-                                color: Colors.indigo.shade50,
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: const Icon(
-                                Icons.inventory_2,
-                                color: Colors.indigo,
-                                size: 34,
-                              ),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: product["imageUrl"] != null &&
+                                      product["imageUrl"]
+                                          .toString()
+                                          .trim()
+                                          .startsWith("http")
+                                  ? Image.network(
+                                      product["imageUrl"],
+                                      height: 72,
+                                      width: 72,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (
+                                        context,
+                                        error,
+                                        stackTrace,
+                                      ) {
+                                        return _fallbackImage();
+                                      },
+                                    )
+                                  : _fallbackImage(),
                             ),
+                            
                             const SizedBox(width: 15),
                             Expanded(
                               child: Column(

@@ -168,18 +168,20 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 76,
-                      width: 76,
-                      decoration: BoxDecoration(
-                        color: Colors.indigo.shade50,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Icon(
-                        _getIcon(category),
-                        color: Colors.indigo,
-                        size: 34,
-                      ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: product["imageUrl"] != null &&
+                              product["imageUrl"].toString().trim().startsWith("http")
+                          ? Image.network(
+                              product["imageUrl"],
+                              height: 76,
+                              width: 76,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _imageFallback(category);
+                              },
+                            )
+                          : _imageFallback(category),
                     ),
 
                     const SizedBox(width: 15),
@@ -286,6 +288,40 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 10),
+
+                        if (product["reasonPoints"] != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: List.generate(
+                              product["reasonPoints"].length,
+                              (index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        size: 16,
+                                        color: Colors.green,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          product["reasonPoints"][index],
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -295,6 +331,22 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
             );
           }),
         ],
+      ),
+    );
+  }
+
+  Widget _imageFallback(String category) {
+    return Container(
+      height: 76,
+      width: 76,
+      decoration: BoxDecoration(
+        color: Colors.indigo.shade50,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Icon(
+        _getIcon(category),
+        color: Colors.indigo,
+        size: 34,
       ),
     );
   }
