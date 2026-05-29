@@ -17,8 +17,7 @@ class MeasurementResultScreen extends StatefulWidget {
       _MeasurementResultScreenState();
 }
 
-class _MeasurementResultScreenState
-    extends State<MeasurementResultScreen> {
+class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
   bool isLoading = true;
 
   double width = 0;
@@ -26,12 +25,18 @@ class _MeasurementResultScreenState
   double depth = 0;
   double area = 0;
 
+  double aiX = 0;
+  double aiY = 0;
+  double aiWidth = 0;
+  double aiHeight = 0;
+  double imageWidth = 736;
+  double imageHeight = 736;
+
   String roomType = "Study Room";
   int confidence = 94;
   String method = "";
 
-  final TextEditingController scaleController =
-      TextEditingController();
+  final TextEditingController scaleController = TextEditingController();
 
   double referenceWidth = 80;
 
@@ -42,38 +47,62 @@ class _MeasurementResultScreenState
   }
 
   Future<void> _loadMeasurement() async {
-    final response =
-        await ApiService.analyzeMeasurement(
+    Map<String, dynamic>? aiData;
+
+    if (widget.imagePath != null) {
+      final aiResponse = await ApiService.detectSpaceWithAI(
+        imagePath: widget.imagePath!,
+      );
+
+      if (aiResponse["statusCode"] == 200) {
+        aiData = aiResponse["data"]["ai"];
+      }
+    }
+
+    final response = await ApiService.analyzeMeasurement(
       imagePath: widget.imagePath,
       referenceWidth: referenceWidth,
     );
 
     if (response["statusCode"] == 200) {
-      final measurement =
-          response["data"]["measurement"];
+      final measurement = response["data"]["measurement"];
+
+      final detectedSpace = aiData?["detectedSpace"];
+      final imageSize = aiData?["imageSize"];
 
       setState(() {
-        width =
-            measurement["width"].toDouble();
+        width = measurement["width"].toDouble();
+        height = measurement["height"].toDouble();
+        depth = measurement["depth"].toDouble();
+        area = measurement["area"].toDouble();
 
-        height =
-            measurement["height"].toDouble();
+        roomType = measurement["roomType"] ?? "Study Room";
+        confidence = measurement["confidence"] ?? 94;
 
-        depth =
-            measurement["depth"].toDouble();
+        method = aiData?["method"] ??
+            measurement["method"] ??
+            "opencv-analysis";
 
-        area =
-            measurement["area"].toDouble();
+        if (detectedSpace != null) {
+          debugPrint("========== AI DATA ==========");
+          debugPrint("AI X = ${detectedSpace["x"]}");
+          debugPrint("AI Y = ${detectedSpace["y"]}");
+          debugPrint("AI WIDTH = ${detectedSpace["width"]}");
+          debugPrint("AI HEIGHT = ${detectedSpace["height"]}");
+          debugPrint("============================");
+          aiX = detectedSpace["x"].toDouble();
+          aiY = detectedSpace["y"].toDouble();
+          aiWidth = detectedSpace["width"].toDouble();
+          aiHeight = detectedSpace["height"].toDouble();
 
-        roomType =
-            measurement["roomType"] ??
-                "Study Room";
+          if (imageSize != null) {
+            imageWidth =
+                imageSize["width"].toDouble();
 
-        confidence =
-            measurement["confidence"] ?? 94;
-
-        method =
-            measurement["method"] ?? "";
+            imageHeight =
+                imageSize["height"].toDouble();
+          }
+        }
 
         isLoading = false;
       });
@@ -86,29 +115,24 @@ class _MeasurementResultScreenState
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
-        backgroundColor:
-            Color(0xFFF8F9FF),
+        backgroundColor: Color(0xFFF8F9FF),
         body: Center(
-          child:
-              CircularProgressIndicator(),
+          child: CircularProgressIndicator(),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF8F9FF),
+      backgroundColor: const Color(0xFFF8F9FF),
       appBar: AppBar(
-        backgroundColor:
-            Colors.transparent,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         foregroundColor: Colors.black,
         title: const Text(
           "AI Measurement Result",
           style: TextStyle(
-            fontWeight:
-                FontWeight.bold,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -118,140 +142,106 @@ class _MeasurementResultScreenState
           Container(
             height: 320,
             decoration: BoxDecoration(
-              borderRadius:
-                  BorderRadius.circular(
-                      28),
+              borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.indigo
-                      .withOpacity(0.08),
+                  color: Colors.indigo.withOpacity(0.08),
                   blurRadius: 20,
-                  offset:
-                      const Offset(0, 10),
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(
-                          28),
-                  child:
-                      widget.imagePath !=
-                              null
-                          ? Image.file(
-                              File(widget
-                                  .imagePath!),
-                              width: double
-                                  .infinity,
-                              height: double
-                                  .infinity,
-                              fit:
-                                  BoxFit.cover,
-                            )
-                          : Container(
-                              color: Colors
-                                  .indigo
-                                  .shade50,
-                              child:
-                                  const Center(
-                                child: Icon(
-                                  Icons
-                                      .home_work,
-                                  size: 120,
-                                  color: Colors
-                                      .indigo,
-                                ),
-                              ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Stack(
+                children: [
+                  widget.imagePath != null
+                      ? Image.file(
+                          File(widget.imagePath!),
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          color: Colors.indigo.shade50,
+                          child: const Center(
+                            child: Icon(
+                              Icons.home_work,
+                              size: 120,
+                              color: Colors.indigo,
                             ),
-                ),
-
-                Positioned(
-                  top: 18,
-                  right: 18,
-                  child: Container(
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration:
-                        BoxDecoration(
-                      color:
-                          Colors.indigo,
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  30),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons
-                              .auto_awesome,
-                          color:
-                              Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(
-                            width: 6),
-                        Text(
-                          roomType,
-                          style:
-                              const TextStyle(
-                            color: Colors
-                                .white,
-                            fontWeight:
-                                FontWeight
-                                    .bold,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
 
-                Positioned(
-                  top: 60,
-                  left: 40,
-                  right: 40,
-                  bottom: 60,
-                  child: Container(
-                    decoration:
-                        BoxDecoration(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  18),
-                      border: Border.all(
-                        color:
-                            Colors.white,
-                        width: 2,
+                  if (aiWidth > 0 && aiHeight > 0)
+                    Positioned(
+                      left: aiX * 320 / imageWidth,
+                      top: aiY * 320 / imageHeight,
+                      child: Container(
+                        width: aiWidth * 320 / imageWidth,
+                        height: aiHeight * 320 / imageHeight,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.greenAccent,
+                            width: 3,
+                          ),
+                          color: Colors.greenAccent.withOpacity(0.12),
+                        ),
+                      ),
+                    ),
+
+                  Positioned(
+                    top: 18,
+                    right: 18,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            roomType,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
 
-                _tag(
-                  "${width.toInt()} cm",
-                  top: 50,
-                  right: 60,
-                ),
+                  _tag(
+                    "${width.toInt()} cm",
+                    top: 50,
+                    right: 60,
+                  ),
 
-                _tag(
-                  "${height.toInt()} cm",
-                  top: 145,
-                  left: 18,
-                ),
+                  _tag(
+                    "${height.toInt()} cm",
+                    top: 145,
+                    left: 18,
+                  ),
 
-                _tag(
-                  "${depth.toInt()} cm",
-                  bottom: 70,
-                  left: 80,
-                ),
-              ],
+                  _tag(
+                    "${depth.toInt()} cm",
+                    bottom: 70,
+                    left: 80,
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -259,17 +249,13 @@ class _MeasurementResultScreenState
 
           Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius:
-                  BorderRadius.circular(
-                      20),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black
-                      .withOpacity(0.04),
+                  color: Colors.black.withOpacity(0.04),
                   blurRadius: 12,
                 ),
               ],
@@ -277,39 +263,33 @@ class _MeasurementResultScreenState
             child: Row(
               children: [
                 const CircleAvatar(
-                  backgroundColor:
-                      Color(0xFFEFF1FF),
+                  backgroundColor: Color(0xFFEFF1FF),
                   child: Icon(
                     Icons.verified,
-                    color:
-                        Colors.indigo,
+                    color: Colors.indigo,
                   ),
                 ),
                 const SizedBox(width: 14),
-                Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
-                  children: [
-                    Text(
-                      "$roomType Analysis Complete",
-                      style:
-                          const TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                        fontSize: 16,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "$roomType Analysis Complete",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                        height: 4),
-                    Text(
-                      "AI confidence: $confidence%",
-                      style:
-                          const TextStyle(
-                        color: Colors.grey,
+                      const SizedBox(height: 4),
+                      Text(
+                        "AI confidence: $confidence%",
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -362,32 +342,24 @@ class _MeasurementResultScreenState
           const SizedBox(height: 12),
 
           Container(
-            padding:
-                const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color:
-                  Colors.indigo.shade50,
-              borderRadius:
-                  BorderRadius.circular(
-                      18),
+              color: Colors.indigo.shade50,
+              borderRadius: BorderRadius.circular(18),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.psychology,
-                  color:
-                      Colors.indigo,
+                  color: Colors.indigo,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     "Analysis Method: $method",
-                    style:
-                        const TextStyle(
-                      color:
-                          Colors.indigo,
-                      fontWeight:
-                          FontWeight.w600,
+                    style: const TextStyle(
+                      color: Colors.indigo,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -398,30 +370,22 @@ class _MeasurementResultScreenState
           const SizedBox(height: 18),
 
           Container(
-            padding:
-                const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius:
-                  BorderRadius.circular(
-                      20),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   "Reference Scale",
                   style: TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 const Text(
                   "Enter a known object width for realistic measurements.",
                   style: TextStyle(
@@ -429,43 +393,23 @@ class _MeasurementResultScreenState
                     height: 1.4,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 TextField(
-                  controller:
-                      scaleController,
-                  keyboardType:
-                      TextInputType
-                          .number,
-                  decoration:
-                      InputDecoration(
-                    hintText:
-                        "Example: Door width = 80 cm",
+                  controller: scaleController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: "Example: Door width = 80 cm",
                     filled: true,
-                    fillColor:
-                        const Color(
-                            0xFFF5F6FA),
-                    border:
-                        OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  16),
-                      borderSide:
-                          BorderSide.none,
+                    fillColor: const Color(0xFFF5F6FA),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                   ),
                   onChanged: (value) {
-                    referenceWidth =
-                        double.tryParse(
-                              value,
-                            ) ??
-                            80;
+                    referenceWidth = double.tryParse(value) ?? 80;
                   },
                 ),
-
-                const SizedBox(height: 14),
               ],
             ),
           ),
@@ -503,115 +447,73 @@ class _MeasurementResultScreenState
               Expanded(
                 child: OutlinedButton(
                   onPressed: () async {
-                    final response =
-                        await ApiService
-                            .saveScan(
-                      imagePath:
-                          widget.imagePath,
+                    final response = await ApiService.saveScan(
+                      imagePath: widget.imagePath,
                       width: width,
                       height: height,
                       depth: depth,
                       area: area,
-                      roomType:
-                          roomType,
+                      roomType: roomType,
                     );
 
-                    if (response[
-                            "statusCode"] ==
-                        201) {
-                      ScaffoldMessenger
-                              .of(context)
-                          .showSnackBar(
+                    if (response["statusCode"] == 201) {
+                      ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            "Scan saved successfully",
-                          ),
+                          content: Text("Scan saved successfully"),
                         ),
                       );
                     } else {
-                      ScaffoldMessenger
-                              .of(context)
-                          .showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            response["data"]
-                                    [
-                                    "message"] ??
+                            response["data"]["message"] ??
                                 "Failed to save scan",
                           ),
                         ),
                       );
                     }
                   },
-                  style:
-                      OutlinedButton
-                          .styleFrom(
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
                       vertical: 16,
                     ),
-                    side:
-                        const BorderSide(
-                      color:
-                          Colors.indigo,
+                    side: const BorderSide(
+                      color: Colors.indigo,
                     ),
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  child: const Text(
-                    "Save Result",
-                  ),
+                  child: const Text("Save Result"),
                 ),
               ),
-
               const SizedBox(width: 14),
-
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (context) =>
-                                SuggestionsScreen(
+                        builder: (context) => SuggestionsScreen(
                           width: width,
                           height: height,
                           depth: depth,
                           area: area,
-                          roomType:
-                              roomType,
+                          roomType: roomType,
                         ),
                       ),
                     );
                   },
-                  style:
-                      ElevatedButton
-                          .styleFrom(
-                    backgroundColor:
-                        Colors.indigo,
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    padding: const EdgeInsets.symmetric(
                       vertical: 16,
                     ),
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  child: const Text(
-                    "View Suggestions",
-                  ),
+                  child: const Text("View Suggestions"),
                 ),
               ),
             ],
@@ -630,12 +532,10 @@ class _MeasurementResultScreenState
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black
-                .withOpacity(0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
           ),
         ],
@@ -650,8 +550,7 @@ class _MeasurementResultScreenState
           Text(
             value,
             style: const TextStyle(
-              fontWeight:
-                  FontWeight.bold,
+              fontWeight: FontWeight.bold,
               fontSize: 20,
             ),
           ),
@@ -680,22 +579,19 @@ class _MeasurementResultScreenState
       left: left,
       right: right,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: 12,
           vertical: 7,
         ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius:
-              BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
           text,
           style: const TextStyle(
             color: Colors.indigo,
-            fontWeight:
-                FontWeight.bold,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

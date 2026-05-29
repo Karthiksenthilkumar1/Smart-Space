@@ -927,4 +927,32 @@ static Future<Map<String, dynamic>> deleteProductSync({
     "data": data,
   };
 }
+
+static Future<Map<String, dynamic>> detectSpaceWithAI({
+  required String imagePath,
+}) async {
+  final url = Uri.parse("$baseUrl/api/ai/detect-space");
+
+  final request = http.MultipartRequest("POST", url);
+
+  request.files.add(
+    await http.MultipartFile.fromPath(
+      "image",
+      imagePath,
+    ),
+  );
+
+  final streamedResponse = await request.send();
+
+  final response = await http.Response.fromStream(
+    streamedResponse,
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
 }
