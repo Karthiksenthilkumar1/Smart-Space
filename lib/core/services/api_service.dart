@@ -8,7 +8,7 @@ class ApiService {
   static const String localNetworkUrl =
       "http://172.30.4.81:8000";
 
-  static String baseUrl = emulatorUrl;
+  static String baseUrl = localNetworkUrl;
   static String? authToken;
 
   static Future<Map<String, dynamic>> login({
