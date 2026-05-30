@@ -36,9 +36,6 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
   int confidence = 94;
   String method = "";
 
-  final TextEditingController scaleController = TextEditingController();
-
-  double referenceWidth = 80;
 
   @override
   void initState() {
@@ -61,7 +58,6 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
 
     final response = await ApiService.analyzeMeasurement(
       imagePath: widget.imagePath,
-      referenceWidth: referenceWidth,
     );
 
     if (response["statusCode"] == 200) {
@@ -362,53 +358,6 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 18),
-
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Reference Scale",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Enter a known object width for realistic measurements.",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: scaleController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: "Example: Door width = 80 cm",
-                    filled: true,
-                    fillColor: const Color(0xFFF5F6FA),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onChanged: (value) {
-                    referenceWidth = double.tryParse(value) ?? 80;
-                  },
                 ),
               ],
             ),
