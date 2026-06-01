@@ -6,7 +6,7 @@ class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
   static const String localNetworkUrl =
-      "http://172.30.4.76:8000";
+      "http://172.30.4.80:8000";
 
   static String baseUrl = localNetworkUrl;
   static String? authToken;
@@ -144,6 +144,25 @@ class ApiService {
       "data": data,
     };
   }
+
+  static Future<Map<String, dynamic>> getMyVideos() async {
+  final url = Uri.parse("$baseUrl/api/video-scans/my-videos");
+
+  final response = await http.get(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $authToken",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
 
   static Future<Map<String, dynamic>> saveProduct({
     required String productId,
@@ -949,6 +968,58 @@ static Future<Map<String, dynamic>> detectSpaceWithAI({
   );
 
   final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> saveVideoScan({
+  required String videoPath,
+  required String thumbnailUrl,
+  required double pixelsPerCm,
+  required List<Map<String, dynamic>> measurements,
+}) async {
+  final url =
+      Uri.parse("$baseUrl/api/video-scans");
+
+  final request =
+      http.MultipartRequest("POST", url);
+
+  request.headers["Authorization"] =
+      "Bearer $authToken";
+
+  request.fields["pixelsPerCm"] =
+      pixelsPerCm.toString();
+
+  request.fields["measurements"] =
+      jsonEncode(measurements);
+
+  request.files.add(
+    await http.MultipartFile.fromPath(
+      "video",
+      videoPath,
+    ),
+  );
+
+request.files.add(
+  await http.MultipartFile.fromPath(
+    "thumbnail",
+    thumbnailUrl,
+  ),
+);
+
+  final streamedResponse =
+      await request.send();
+
+  final response =
+      await http.Response.fromStream(
+    streamedResponse,
+  );
+
+  final data =
+      jsonDecode(response.body);
 
   return {
     "statusCode": response.statusCode,

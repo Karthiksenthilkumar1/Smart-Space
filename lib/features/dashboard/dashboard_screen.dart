@@ -8,6 +8,8 @@ import '../../core/navigation/app_routes.dart';
 import '../../core/widgets/glass_card.dart';
 import '../scan/saved_screen.dart';
 import '../user/user_notifications_screen.dart';
+import '../video/video_capture_screen.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -153,8 +155,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
 
-              const SizedBox(height: 35),
+              const SizedBox(height: 15),
 
+              AnimatedCardWrapper(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    AppRoutes.fadeSlide(
+                      const VideoCaptureScreen(),
+                    ),
+                  );
+                },
+                child: _actionCard(
+                  icon: Icons.videocam_outlined,
+                  title: "Room Video Capture",
+                  subtitle: "Record 360° Room",
+                ),
+              ),
+
+              const SizedBox(height: 35),
+              
               // RECENT HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -44,6 +44,7 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
   }
 
   Future<void> _loadMeasurement() async {
+
     Map<String, dynamic>? aiData;
 
     if (widget.imagePath != null) {

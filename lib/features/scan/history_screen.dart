@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_space/core/services/api_service.dart';
 import 'scan_detail_screen.dart';
+import '../video/screens/video_history_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -11,14 +12,28 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState
-    extends State<HistoryScreen> {
+    extends State<HistoryScreen>
+    with SingleTickerProviderStateMixin {
+      late TabController _tabController;
   bool isLoading = true;
   List scans = [];
 
   @override
   void initState() {
     super.initState();
+
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+    );
+
     _loadScans();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadScans() async {
@@ -160,238 +175,105 @@ class _HistoryScreenState
           ),
         ),
       ),
-      body: isLoading
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
-          : scans.isEmpty
-              ? const Center(
-                  child: Text(
-                    "No saved scans yet",
-                  ),
-                )
-              : ListView.builder(
-                  padding:
-                      const EdgeInsets.all(
-                          16),
-                  itemCount: scans.length,
-                  itemBuilder:
-                      (context, index) {
-                    final scan =
-                        scans[index];
+      body: Column(
+        children: [
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: "Images"),
+              Tab(text: "Videos"),
+            ],
+          ),
 
-                    final width =
-                        scan["width"] ?? 0;
-
-                    final height =
-                        scan["height"] ?? 0;
-
-                    final depth =
-                        scan["depth"] ?? 0;
-
-                    final area =
-                        scan["area"] ?? 0;
-
-                    final roomType =
-                        scan["roomType"] ??
-                            "Study Room";
-
-                    final size =
-                        "${width.toString()} × ${height.toString()} × ${depth.toString()} cm";
-
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) =>
-                                    ScanDetailScreen(
-                              scan: scan,
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : scans.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "No saved scans yet",
                             ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin:
-                            const EdgeInsets
-                                .only(
-                          bottom: 16,
-                        ),
-                        padding:
-                            const EdgeInsets
-                                .all(14),
-                        decoration:
-                            BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                              BorderRadius
-                                  .circular(
-                                      22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors
-                                  .black
-                                  .withOpacity(
-                                      0.03),
-                              blurRadius: 12,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            _imageBox(
-                              scan["imageUrl"],
-                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: scans.length,
+                            itemBuilder: (context, index) {
+                              final scan = scans[index];
 
-                            const SizedBox(
-                                width: 14),
+                              final width =
+                                  scan["width"] ?? 0;
 
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child:
-                                            const Text(
-                                          "Saved Measurement",
-                                          maxLines:
-                                              1,
-                                          overflow:
-                                              TextOverflow
-                                                  .ellipsis,
-                                          style:
-                                              TextStyle(
-                                            fontWeight:
-                                                FontWeight.bold,
-                                            fontSize:
-                                                15,
-                                          ),
-                                        ),
+                              final height =
+                                  scan["height"] ?? 0;
+
+                              final depth =
+                                  scan["depth"] ?? 0;
+
+                              final area =
+                                  scan["area"] ?? 0;
+
+                              final roomType =
+                                  scan["roomType"] ??
+                                      "Study Room";
+
+                              final size =
+                                  "${width.toString()} × ${height.toString()} × ${depth.toString()} cm";
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ScanDetailScreen(
+                                        scan: scan,
                                       ),
-
-                                      Container(
-                                        padding:
-                                            const EdgeInsets.symmetric(
-                                          horizontal:
-                                              10,
-                                          vertical:
-                                              5,
-                                        ),
-                                        decoration:
-                                            BoxDecoration(
-                                          color: _roomColor(
-                                                  roomType)
-                                              .withOpacity(
-                                                  0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(
-                                                  20),
-                                        ),
-                                        child:
-                                            Text(
-                                          roomType,
-                                          style:
-                                              TextStyle(
-                                            color:
-                                                _roomColor(
-                                                    roomType),
-                                            fontSize:
-                                                11,
-                                            fontWeight:
-                                                FontWeight.bold,
-                                          ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  margin:
+                                      const EdgeInsets.only(
+                                    bottom: 16,
+                                  ),
+                                  padding:
+                                      const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                            22),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      _imageBox(
+                                        scan["imageUrl"],
+                                      ),
+                                      const SizedBox(
+                                          width: 14),
+                                      Expanded(
+                                        child: Text(
+                                          "Saved Measurement",
                                         ),
                                       ),
                                     ],
                                   ),
+                                ),
+                              );
+                            },
+                          ),
 
-                                  const SizedBox(
-                                      height:
-                                          6),
-
-                                  Text(
-                                    scan["createdAt"]
-                                        .toString()
-                                        .substring(
-                                            0,
-                                            10),
-                                    style:
-                                        const TextStyle(
-                                      color:
-                                          Colors.grey,
-                                      fontSize:
-                                          11,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                      height:
-                                          8),
-
-                                  Text(
-                                    size,
-                                    maxLines:
-                                        1,
-                                    overflow:
-                                        TextOverflow
-                                            .ellipsis,
-                                    style:
-                                        const TextStyle(
-                                      color:
-                                          Colors.black87,
-                                      fontWeight:
-                                          FontWeight.w600,
-                                      fontSize:
-                                          12,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                      height:
-                                          5),
-
-                                  Text(
-                                    "${area.toString()} m² analyzed space",
-                                    style:
-                                        const TextStyle(
-                                      color:
-                                          Colors.indigo,
-                                      fontWeight:
-                                          FontWeight.w600,
-                                      fontSize:
-                                          12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            IconButton(
-                              onPressed: () {
-                                _deleteScan(
-                                  scan["id"],
-                                );
-                              },
-                              icon:
-                                  const Icon(
-                                Icons
-                                    .delete_outline,
-                                color:
-                                    Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                const VideoHistoryScreen(),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -22,6 +22,7 @@ class _ManualMeasurementScreenState extends State<ManualMeasurementScreen> {
 
   List<Offset> points = [];
   double? calculatedWidth;
+  int? selectedPointIndex;
 
   double _distance(Offset a, Offset b) {
     return sqrt(pow(a.dx - b.dx, 2) + pow(a.dy - b.dy, 2));
@@ -106,21 +107,35 @@ class _ManualMeasurementScreenState extends State<ManualMeasurementScreen> {
 
           GestureDetector(
             onTapDown: (details) {
-                if (points.length >= 4) return;
+              final tap = details.localPosition;
 
+              for (int i = 0; i < points.length; i++) {
+                if ((points[i] - tap).distance < 25) {
+                  selectedPointIndex = i;
+                  return;
+                }
+              }
+
+              if (points.length < 4) {
                 setState(() {
-                points.add(details.localPosition);
+                  points.add(tap);
                 });
+              }
             },
 
             onPanUpdate: (details) {
-                if (points.isEmpty) return;
+              if (selectedPointIndex == null) return;
 
-                setState(() {
-                points[points.length - 1] += details.delta;
+              setState(() {
+                points[selectedPointIndex!] += details.delta;
                 calculatedWidth = null;
-                });
+              });
             },
+
+            onPanEnd: (_) {
+              selectedPointIndex = null;
+            },
+            
             child: Container(
               height: 360,
               decoration: BoxDecoration(
