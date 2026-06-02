@@ -6,7 +6,7 @@ class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
   static const String localNetworkUrl =
-      "http://172.30.4.80:8000";
+      "http://172.30.4.77:8000";
 
   static String baseUrl = localNetworkUrl;
   static String? authToken;
@@ -1020,6 +1020,25 @@ request.files.add(
 
   final data =
       jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> deleteVideo(
+  String id,
+) async {
+  final response = await http.delete(
+    Uri.parse("$baseUrl/api/video-scans/$id"),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $authToken",
+    },
+  );
+
+  final data = jsonDecode(response.body);
 
   return {
     "statusCode": response.statusCode,

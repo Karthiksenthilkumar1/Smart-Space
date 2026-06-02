@@ -1,17 +1,23 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:video_thumbnail/video_thumbnail.dart' as vt;
+
 import 'frame_preview_screen.dart';
 
 class VideoCaptureScreen extends StatefulWidget {
   const VideoCaptureScreen({super.key});
 
   @override
-  State<VideoCaptureScreen> createState() => _VideoCaptureScreenState();
+  State<VideoCaptureScreen> createState() =>
+      _VideoCaptureScreenState();
 }
 
-class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
+class _VideoCaptureScreenState
+    extends State<VideoCaptureScreen> {
   CameraController? controller;
+
+  final ImagePicker picker = ImagePicker();
 
   bool isLoading = true;
   bool isRecording = false;
@@ -49,32 +55,62 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
   }
 
   Future<void> stopRecording() async {
-  if (controller == null) return;
+    if (controller == null) return;
 
-  final video = await controller!.stopVideoRecording();
+    final video =
+        await controller!.stopVideoRecording();
 
-  setState(() {
-    isRecording = false;
-  });
+    setState(() {
+      isRecording = false;
+    });
 
-  final thumbnailPath = await vt.VideoThumbnail.thumbnailFile(
-    video: video.path,
-    imageFormat: vt.ImageFormat.PNG,
-    quality: 100,
-);
+    final thumbnailPath =
+        await vt.VideoThumbnail.thumbnailFile(
+      video: video.path,
+      imageFormat: vt.ImageFormat.PNG,
+      quality: 100,
+    );
 
-  if (thumbnailPath != null) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FramePreviewScreen(
+    if (thumbnailPath != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FramePreviewScreen(
             imagePath: thumbnailPath,
             videoPath: video.path,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
+
+  Future<void> pickVideoFromGallery() async {
+    final XFile? video =
+        await picker.pickVideo(
+      source: ImageSource.gallery,
+    );
+
+    if (video == null) return;
+
+    final thumbnailPath =
+        await vt.VideoThumbnail.thumbnailFile(
+      video: video.path,
+      imageFormat: vt.ImageFormat.PNG,
+      quality: 100,
+    );
+
+    if (thumbnailPath != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FramePreviewScreen(
+            imagePath: thumbnailPath,
+            videoPath: video.path,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -99,37 +135,64 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
       body: Column(
         children: [
           Expanded(
-            child: CameraPreview(controller!),
+            child: CameraPreview(
+              controller!,
+            ),
           ),
 
           Padding(
             padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                icon: Icon(
-                  isRecording
-                      ? Icons.stop
-                      : Icons.videocam,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    icon: Icon(
+                      isRecording
+                          ? Icons.stop
+                          : Icons.videocam,
+                    ),
+                    label: Text(
+                      isRecording
+                          ? "Stop Recording"
+                          : "Start Recording",
+                    ),
+                    style:
+                        ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isRecording
+                              ? Colors.red
+                              : Colors.indigo,
+                    ),
+                    onPressed: () {
+                      if (isRecording) {
+                        stopRecording();
+                      } else {
+                        startRecording();
+                      }
+                    },
+                  ),
                 ),
-                label: Text(
-                  isRecording
-                      ? "Stop Recording"
-                      : "Start Recording",
+
+                const SizedBox(height: 12),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        pickVideoFromGallery,
+                    icon: const Icon(
+                      Icons.video_library,
+                    ),
+                    label: const Text(
+                      "Select From Gallery",
+                    ),
+                  ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isRecording ? Colors.red : Colors.indigo,
-                ),
-                onPressed: () {
-                  if (isRecording) {
-                    stopRecording();
-                  } else {
-                    startRecording();
-                  }
-                },
-              ),
+              ],
             ),
           ),
         ],

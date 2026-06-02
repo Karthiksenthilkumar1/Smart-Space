@@ -20,7 +20,6 @@ class VideoDetailScreen extends StatelessWidget {
           );
           final thumbnailUrl =
             video["thumbnailUrl"];
-          print(video["thumbnailUrl"]);
 
     return Scaffold(
       appBar: AppBar(
@@ -30,19 +29,53 @@ class VideoDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.videocam,
-                  color: Colors.indigo,
+            Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
                 ),
-                title: const Text("Video Scan"),
-                subtitle: Text(
-                  video["createdAt"]
-                      .toString()
-                      .substring(0, 10),
+                ],
+            ),
+            child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                const Text(
+                    "Video Measurement Session",
+                    style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    ),
                 ),
-              ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                    video["createdAt"]
+                        .toString()
+                        .substring(0, 10),
+                    style: const TextStyle(
+                    color: Colors.grey,
+                    ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                    "${measurements.length} Measurement(s)",
+                    style: const TextStyle(
+                    color: Colors.indigo,
+                    fontWeight: FontWeight.w600,
+                    ),
+                ),
+                ],
+            ),
             ),
 
             const SizedBox(height: 10),
@@ -68,14 +101,25 @@ class VideoDetailScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             if (thumbnailUrl != null)
-            Container(
+                Container(
                 height: 250,
                 width: double.infinity,
                 margin: const EdgeInsets.only(
-                bottom: 20,
+                    bottom: 20,
                 ),
-                child: Stack(
-                children: [
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 10,
+                    ),
+                    ],
+                ),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                    children: [
                     ClipRRect(
                     borderRadius:
                         BorderRadius.circular(16),
@@ -95,6 +139,7 @@ class VideoDetailScreen extends StatelessWidget {
                         ),
                     ),
                 ],
+                ),
                 ),
             ),
 
@@ -120,19 +165,49 @@ class VideoDetailScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final m = measurements[index];
 
-                  return Card(
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.straighten,
-                      ),
-                      title: Text(
-                        m["name"].toString(),
-                      ),
-                      subtitle: Text(
-                        "${m["distance"]} cm",
-                      ),
+                  return Container(
+                margin: const EdgeInsets.only(
+                    bottom: 12,
+                ),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(
+                        0.05,
+                        ),
+                        blurRadius: 8,
                     ),
-                  );
+                    ],
+                ),
+                child: ListTile(
+                    leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: Colors.indigo.withOpacity(
+                        0.1,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                        Icons.straighten,
+                        color: Colors.indigo,
+                    ),
+                    ),
+                    title: Text(
+                    m["name"].toString(),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                    ),
+                    ),
+                    subtitle: Text(
+                    "${(m["distance"] as num).toDouble().toStringAsFixed(1)} cm",
+                    ),
+                ),
+                );
                 },
               ),
             ),
@@ -179,6 +254,21 @@ class VideoMeasurementPainter
         p2,
         paintLine,
       );
+
+      final pointPaint = Paint()
+        ..color = Colors.red;
+
+        canvas.drawCircle(
+        p1,
+        6,
+        pointPaint,
+        );
+
+        canvas.drawCircle(
+        p2,
+        6,
+        pointPaint,
+     );
 
       final midpoint = Offset(
         (p1.dx + p2.dx) / 2,

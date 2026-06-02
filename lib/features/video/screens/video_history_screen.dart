@@ -181,9 +181,80 @@ class _VideoHistoryScreenState
                     ),
                     ),
 
-                    const Icon(
+                    Column(
+                    children: [
+                        IconButton(
+                        icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                        ),
+                        onPressed: () async {
+                        final confirm =
+                            await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                            title: const Text(
+                                "Delete Scan?",
+                            ),
+                            content: const Text(
+                                "This action cannot be undone.",
+                            ),
+                            actions: [
+                                TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(
+                                    context,
+                                    false,
+                                ),
+                                child: const Text(
+                                    "Cancel",
+                                ),
+                                ),
+                                ElevatedButton(
+                                onPressed: () =>
+                                    Navigator.pop(
+                                    context,
+                                    true,
+                                ),
+                                child: const Text(
+                                    "Delete",
+                                ),
+                                ),
+                            ],
+                            ),
+                        );
+
+                        if (confirm != true) return;
+                        print("Deleting ID: ${video["id"]}");
+
+                        final result =
+                            await ApiService.deleteVideo(
+                                video["id"].toString(),
+                            );
+                        print(result);
+
+                        if (result["statusCode"] == 200) {
+                            loadVideos();
+
+                            if (!mounted) return;
+
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                "Scan Deleted",
+                                ),
+                            ),
+                            );
+                        }
+                        },
+                        ),
+
+                        const Icon(
                         Icons.arrow_forward_ios,
                         size: 16,
+                        ),
+                    ],
                     ),
                     ],
                 ),
