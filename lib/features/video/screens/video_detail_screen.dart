@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'video_player_screen.dart';
 import 'frame_view_screen.dart';
+import 'video_suggestions_screen.dart';
 
 class VideoDetailScreen extends StatelessWidget {
   final Map<String, dynamic> video;
@@ -93,6 +94,36 @@ class VideoDetailScreen extends StatelessWidget {
                     builder: (_) => VideoPlayerScreen(
                         videoUrl: video["videoUrl"],
                         measurements: measurements,
+                    ),
+                    ),
+                );
+                },
+            ),
+            ),
+
+            const SizedBox(height: 10),
+
+            SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+                icon: const Icon(
+                Icons.auto_awesome,
+                ),
+                label: const Text(
+                "GET RECOMMENDATIONS",
+                ),
+                style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo,
+                foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                    builder: (_) =>
+                        VideoSuggestionsScreen(
+                        measurements: measurements,
+                        roomType: "Custom Space",
                     ),
                     ),
                 );

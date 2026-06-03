@@ -132,7 +132,7 @@ class _VideoFramePickerScreenState
         children: [
 
           SizedBox(
-            height: 300,
+            height: MediaQuery.of(context).size.height * 0.58,
             width: double.infinity,
             child: FittedBox(
               fit: BoxFit.cover,
@@ -144,78 +144,81 @@ class _VideoFramePickerScreenState
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
-          ValueListenableBuilder(
-            valueListenable: controller,
-            builder: (_, value, __) {
-              return Slider(
-                min: 0,
-                max: value.duration
-                    .inMilliseconds
-                    .toDouble(),
-                value: value.position
-                    .inMilliseconds
-                    .toDouble()
-                    .clamp(
-                      0,
-                      value.duration
-                          .inMilliseconds
-                          .toDouble(),
-                    ),
-                onChanged: (newValue) {
-                  controller.seekTo(
-                    Duration(
-                      milliseconds:
-                          newValue.toInt(),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-
-          Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-            children: [
-
-              IconButton(
-                icon: Icon(
-                  controller.value.isPlaying
-                      ? Icons.pause
-                      : Icons.play_arrow,
+          Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
                 ),
-                iconSize: 40,
-                onPressed: () {
-                  setState(() {
-                    if (controller
-                        .value.isPlaying) {
-                      controller.pause();
-                    } else {
-                      controller.play();
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
+              ],
+            ),
+            child: Column(
+              children: [
 
-          const SizedBox(height: 20),
-
-          Padding(
-            padding:
-                const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed:
-                    useCurrentFrame,
-                child: const Text(
-                  "USE THIS FRAME",
+                ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (_, value, __) {
+                    return Slider(
+                      min: 0,
+                      max: value.duration.inMilliseconds.toDouble(),
+                      value: value.position.inMilliseconds
+                          .toDouble()
+                          .clamp(
+                            0,
+                            value.duration.inMilliseconds.toDouble(),
+                          ),
+                      onChanged: (newValue) {
+                        controller.seekTo(
+                          Duration(
+                            milliseconds: newValue.toInt(),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
-              ),
+
+                IconButton(
+                  icon: Icon(
+                    controller.value.isPlaying
+                        ? Icons.pause
+                        : Icons.play_arrow,
+                  ),
+                  iconSize: 40,
+                  onPressed: () {
+                    setState(() {
+                      if (controller.value.isPlaying) {
+                        controller.pause();
+                      } else {
+                        controller.play();
+                      }
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: useCurrentFrame,
+                    child: const Text(
+                      "USE THIS FRAME",
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
