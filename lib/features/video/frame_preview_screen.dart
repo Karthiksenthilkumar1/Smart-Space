@@ -9,11 +9,14 @@ class FramePreviewScreen extends StatefulWidget {
 
   final List<Map<String, dynamic>>? savedMeasurements;
 
+  final int frameTimeMs;
+
   const FramePreviewScreen({
     super.key,
     required this.imagePath,
     required this.videoPath,
     this.savedMeasurements,
+    required this.frameTimeMs,
   });
 
   @override
@@ -96,6 +99,9 @@ class _FramePreviewScreenState
     "name": measurementNameController.text,
     "distance": calculateMeasuredCm(),
 
+    "frameTimeMs": widget.frameTimeMs,
+    "frameImage": widget.imagePath,
+
     "point1x": measurePoint1!.dx,
     "point1y": measurePoint1!.dy,
 
@@ -106,6 +112,9 @@ class _FramePreviewScreenState
     currentFrameMeasurements.add({
       "name": measurementNameController.text,
       "distance": calculateMeasuredCm(),
+
+      "frameTimeMs": widget.frameTimeMs,
+      "frameImage": widget.imagePath,
 
       "point1x": measurePoint1!.dx,
       "point1y": measurePoint1!.dy,
@@ -125,6 +134,7 @@ class _FramePreviewScreenState
         content: Text("Measurement Saved"),
         ),
     );
+    print(measurements);
 
     setState(() {});
   }

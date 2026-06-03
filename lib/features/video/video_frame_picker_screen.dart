@@ -85,7 +85,9 @@ class _VideoFramePickerScreenState
           videoPath: widget.videoPath,
           savedMeasurements:
               widget.savedMeasurements,
-        ),
+          frameTimeMs:
+              position.inMilliseconds,
+        )
       ),
     );
 

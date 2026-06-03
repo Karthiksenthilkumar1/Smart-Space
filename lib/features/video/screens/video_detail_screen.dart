@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'video_player_screen.dart';
+import 'frame_view_screen.dart';
 
 class VideoDetailScreen extends StatelessWidget {
   final Map<String, dynamic> video;
@@ -91,6 +92,7 @@ class VideoDetailScreen extends StatelessWidget {
                     MaterialPageRoute(
                     builder: (_) => VideoPlayerScreen(
                         videoUrl: video["videoUrl"],
+                        measurements: measurements,
                     ),
                     ),
                 );
@@ -184,29 +186,47 @@ class VideoDetailScreen extends StatelessWidget {
                 ),
                 child: ListTile(
                     leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        color: Colors.indigo.withOpacity(
-                        0.1,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                        color: Colors.indigo.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                         ),
-                        borderRadius:
-                            BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
+                        child: const Icon(
                         Icons.straighten,
                         color: Colors.indigo,
+                        ),
                     ),
-                    ),
+
                     title: Text(
-                    m["name"].toString(),
-                    style: const TextStyle(
+                        m["name"].toString(),
+                        style: const TextStyle(
                         fontWeight: FontWeight.bold,
+                        ),
                     ),
-                    ),
+
                     subtitle: Text(
-                    "${(m["distance"] as num).toDouble().toStringAsFixed(1)} cm",
+                        "${(m["distance"] as num).toDouble().toStringAsFixed(1)} cm",
                     ),
-                ),
+
+                    trailing: IconButton(
+                        icon: const Icon(
+                        Icons.image,
+                        color: Colors.indigo,
+                        ),
+                        onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                builder: (_) =>
+                                   FrameViewScreen(
+                                    measurement: m,
+                                    videoUrl: video["videoUrl"],
+                                )
+                                ),
+                            );
+                        },
+                    ),
+                    ),
                 );
                 },
               ),
