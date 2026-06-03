@@ -43,6 +43,7 @@ class _FramePreviewScreenState
   final GlobalKey imageKey = GlobalKey();
 
   List<Map<String, dynamic>> measurements = [];
+  List<Map<String, dynamic>> currentFrameMeasurements = [];
 
   @override
   void initState() {
@@ -100,6 +101,17 @@ class _FramePreviewScreenState
 
     "point2x": measurePoint2!.dx,
     "point2y": measurePoint2!.dy,
+    });
+
+    currentFrameMeasurements.add({
+      "name": measurementNameController.text,
+      "distance": calculateMeasuredCm(),
+
+      "point1x": measurePoint1!.dx,
+      "point1y": measurePoint1!.dy,
+
+      "point2x": measurePoint2!.dx,
+      "point2y": measurePoint2!.dy,
     });
 
     measurementNameController.clear();
@@ -219,8 +231,10 @@ class _FramePreviewScreenState
             
 
             CustomPaint(
-                size: Size.infinite,
-                painter: MeasurementPainter(measurements),
+              size: Size.infinite,
+              painter: MeasurementPainter(
+                currentFrameMeasurements,
+              ),
             ),
 
             CustomPaint(
@@ -281,8 +295,8 @@ class _FramePreviewScreenState
                 ),
               ),
 
-              // Saved Measurement Point 1
-            ...measurements.map(
+            // Saved Measurement Point 1
+          ...currentFrameMeasurements.map(
             (m) => Positioned(
                 left: m["point1x"] - 12,
                 top: m["point1y"] - 12,
@@ -295,7 +309,7 @@ class _FramePreviewScreenState
             ),
 
             // Saved Measurement Point 2
-            ...measurements.map(
+          ...currentFrameMeasurements.map(
             (m) => Positioned(
                 left: m["point2x"] - 12,
                 top: m["point2y"] - 12,
@@ -542,6 +556,24 @@ class _FramePreviewScreenState
                         ),
 
                         if (readyToSave)
+
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(
+                                    context,
+                                    measurements,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.photo_library,
+                                ),
+                                label: const Text(
+                                  "SELECT ANOTHER FRAME",
+                                ),
+                              ),
+                            ),
                             Padding(
                                 padding: const EdgeInsets.only(top: 10),
                                 child: ElevatedButton.icon(

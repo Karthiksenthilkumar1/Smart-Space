@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:video_thumbnail/video_thumbnail.dart' as vt;
+import 'video_frame_picker_screen.dart';
 
 import 'frame_preview_screen.dart';
 
@@ -64,23 +64,16 @@ class _VideoCaptureScreenState
       isRecording = false;
     });
 
-    final thumbnailPath =
-        await vt.VideoThumbnail.thumbnailFile(
-      video: video.path,
-      imageFormat: vt.ImageFormat.PNG,
-      quality: 100,
-    );
-
-    if (thumbnailPath != null && mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => FramePreviewScreen(
-            imagePath: thumbnailPath,
-            videoPath: video.path,
-          ),
-        ),
-      );
+    if (mounted) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+            builder: (_) =>
+                VideoFramePickerScreen(
+                videoPath: video.path,
+            ),
+            ),
+        );
     }
   }
 
@@ -92,23 +85,16 @@ class _VideoCaptureScreenState
 
     if (video == null) return;
 
-    final thumbnailPath =
-        await vt.VideoThumbnail.thumbnailFile(
-      video: video.path,
-      imageFormat: vt.ImageFormat.PNG,
-      quality: 100,
-    );
-
-    if (thumbnailPath != null && mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => FramePreviewScreen(
-            imagePath: thumbnailPath,
-            videoPath: video.path,
-          ),
-        ),
-      );
+    if (mounted) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+            builder: (_) =>
+                VideoFramePickerScreen(
+                videoPath: video.path,
+            ),
+            ),
+        );
     }
   }
 

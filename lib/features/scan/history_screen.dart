@@ -261,6 +261,55 @@ class _HistoryScreenState
                                           "Saved Measurement",
                                         ),
                                       ),
+
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () async {
+                                          final confirm =
+                                              await showDialog<bool>(
+                                            context: context,
+                                            builder: (_) => AlertDialog(
+                                              title: const Text(
+                                                "Delete Scan?",
+                                              ),
+                                              content: const Text(
+                                                "This action cannot be undone.",
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                    context,
+                                                    false,
+                                                  ),
+                                                  child: const Text(
+                                                    "Cancel",
+                                                  ),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                    context,
+                                                    true,
+                                                  ),
+                                                  child: const Text(
+                                                    "Delete",
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (confirm != true) return;
+
+                                          await _deleteScan(
+                                            scan["id"].toString(),
+                                          );
+                                        },
+                                      ),
                                     ],
                                   ),
                                 ),
