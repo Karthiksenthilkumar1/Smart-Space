@@ -17,6 +17,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Map analytics = {
     "users": 0,
     "scans": 0,
+    "imageScans": 0,
+    "videoScans": 0,
     "products": 0,
     "savedProducts": 0,
   };
@@ -46,7 +48,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       {
         "title": "Total Scans",
         "value": analytics["scans"].toString(),
-        "icon": Icons.camera_alt,
+        "icon": Icons.analytics,
+      },
+      {
+        "title": "Image Scans",
+        "value": analytics["imageScans"].toString(),
+        "icon": Icons.photo_camera,
+      },
+      {
+        "title": "Video Scans",
+        "value": analytics["videoScans"].toString(),
+        "icon": Icons.videocam,
       },
       {
         "title": "Saved Products",
@@ -64,7 +76,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         "icon": Icons.inventory_2,
       },
     ];
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
       appBar: AppBar(
@@ -99,7 +110,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 15,
                     crossAxisSpacing: 15,
-                    childAspectRatio: 1.1,
+                    childAspectRatio: 1.25,
                   ),
                   itemBuilder: (context, index) {
                     final item = analyticsCards[index];
@@ -179,37 +190,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             BarChartRodData(
                               toY: analytics["users"].toDouble(),
                               width: 16,
-                              borderRadius: BorderRadius.circular(6),
                             ),
                           ],
                         ),
+
                         BarChartGroupData(
                           x: 1,
                           barRods: [
                             BarChartRodData(
-                              toY: analytics["scans"].toDouble(),
+                              toY: analytics["imageScans"].toDouble(),
                               width: 16,
-                              borderRadius: BorderRadius.circular(6),
                             ),
                           ],
                         ),
+
                         BarChartGroupData(
                           x: 2,
                           barRods: [
                             BarChartRodData(
-                              toY: analytics["products"].toDouble(),
+                              toY: analytics["videoScans"].toDouble(),
                               width: 16,
-                              borderRadius: BorderRadius.circular(6),
                             ),
                           ],
                         ),
+
                         BarChartGroupData(
                           x: 3,
                           barRods: [
                             BarChartRodData(
+                              toY: analytics["products"].toDouble(),
+                              width: 16,
+                            ),
+                          ],
+                        ),
+
+                        BarChartGroupData(
+                          x: 4,
+                          barRods: [
+                            BarChartRodData(
                               toY: analytics["savedProducts"].toDouble(),
                               width: 16,
-                              borderRadius: BorderRadius.circular(6),
                             ),
                           ],
                         ),
@@ -223,22 +243,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: const [
-                    Text(
-                      "Users",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    Text(
-                      "Scans",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    Text(
-                      "Products",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    Text(
-                      "Saved",
-                      style: TextStyle(fontSize: 12),
-                    ),
+                    Text("Users"),
+                    Text("Image"),
+                    Text("Video"),
+                    Text("Products"),
+                    Text("Saved"),
                   ],
                 ),
 
@@ -256,7 +265,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                 const SizedBox(height: 14),
 
-                ...(analytics["topSavedProducts"] as List).map(
+                ...((analytics["topSavedProducts"] ?? []) as List).map(
                   (product) {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -360,9 +369,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ActivityTile(
                   icon: Icons.camera_alt,
                   text:
-                      "${analytics["scans"]} scans completed",
+                      "${analytics["scans"]} total scans completed",
                 ),
 
+                ActivityTile(
+                  icon: Icons.photo_camera,
+                  text:
+                      "${analytics["imageScans"]} image scans completed",
+                ),
+
+                ActivityTile(
+                  icon: Icons.videocam,
+                  text:
+                      "${analytics["videoScans"]} video scans completed",
+                ),
                 ActivityTile(
                   icon: Icons.favorite,
                   text:

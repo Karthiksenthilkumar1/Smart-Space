@@ -5,9 +5,12 @@ import 'package:video_player/video_player.dart';
 class VideoPlayerScreen extends StatefulWidget {
   final String videoPath;
 
+  final List<Map<String, dynamic>> measurements;
+
   const VideoPlayerScreen({
     super.key,
     required this.videoPath,
+    required this.measurements,
   });
 
   @override
@@ -17,8 +20,19 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController controller;
 
+  List<Map<String, dynamic>> activeMeasurements = [];
+
   @override
   void initState() {
+    debugPrint(
+      "TOTAL MEASUREMENTS: ${widget.measurements.length}",
+    );
+
+for (var m in widget.measurements) {
+  debugPrint(
+    "MEASUREMENT => ${m["name"]} | frameTimeMs=${m["frameTimeMs"]}",
+  );
+}
     super.initState();
 
     controller = VideoPlayerController.file(
@@ -27,6 +41,39 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ..initialize().then((_) {
         setState(() {});
       });
+
+    controller.addListener(() {
+
+      final currentTime =
+          controller.value.position.inMilliseconds;
+
+      final visibleMeasurements =
+          widget.measurements.where((m) {
+
+        final frameTime =
+            m["frameTimeMs"] ?? 0;
+
+        return (currentTime - frameTime).abs() < 1000;
+
+      }).toList();
+
+      if (mounted) {
+        setState(() {
+          activeMeasurements =
+              List<Map<String, dynamic>>.from(
+            visibleMeasurements,
+          );
+          debugPrint(
+            "TIME: $currentTime | ACTIVE: ${activeMeasurements.length}",
+          );
+          for (var m in activeMeasurements) {
+            debugPrint(
+              "SHOWING: ${m["name"]} @ ${m["frameTimeMs"]}",
+            );
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -45,7 +92,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         child: controller.value.isInitialized
             ? AspectRatio(
                 aspectRatio: controller.value.aspectRatio,
-                child: VideoPlayer(controller),
+                child: Stack(
+                  children: [
+
+                    VideoPlayer(controller),
+
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter:
+                            ReplayMeasurementPainter(
+                          activeMeasurements,
+                        ),
+                      ),
+                    ),
+
+                  ],
+                ),
               )
             : const CircularProgressIndicator(),
       ),
@@ -64,5 +126,104 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         ),
       ),
     );
+  }
+}
+
+class ReplayMeasurementPainter
+    extends CustomPainter {
+
+  final List<Map<String, dynamic>>
+      measurements;
+
+  ReplayMeasurementPainter(
+    this.measurements,
+  );
+
+  @override
+  void paint(
+    Canvas canvas,
+    Size size,
+  ) {
+
+   debugPrint(
+    "PAINTER RECEIVED: ${measurements.length}",
+  );
+    final linePaint = Paint()
+      ..color = Colors.green
+      ..strokeWidth = 4;
+
+    final pointPaint = Paint()
+      ..color = Colors.red;
+
+    for (var m in measurements) {
+
+      final p1 = Offset(
+        (m["point1x"] as num)
+            .toDouble(),
+        (m["point1y"] as num)
+            .toDouble(),
+      );
+
+      final p2 = Offset(
+        (m["point2x"] as num)
+            .toDouble(),
+        (m["point2y"] as num)
+            .toDouble(),
+      );
+
+      canvas.drawLine(
+        p1,
+        p2,
+        linePaint,
+      );
+
+      canvas.drawCircle(
+        p1,
+        6,
+        pointPaint,
+      );
+
+      canvas.drawCircle(
+        p2,
+        6,
+        pointPaint,
+      );
+
+      final midpoint = Offset(
+        (p1.dx + p2.dx) / 2,
+        (p1.dy + p2.dy) / 2,
+      );
+
+      final textPainter =
+          TextPainter(
+        text: TextSpan(
+          text:
+              "${m["name"]}\n${(m["distance"] as num).toStringAsFixed(1)} cm",
+          style: const TextStyle(
+            color: Colors.white,
+            backgroundColor:
+                Colors.black,
+            fontSize: 12,
+            fontWeight:
+                FontWeight.bold,
+          ),
+        ),
+        textDirection:
+            TextDirection.ltr,
+      );
+
+      textPainter.layout();
+
+      textPainter.paint(
+        canvas,
+        midpoint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(
+      covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'admin_profile_screen.dart';
+import 'change_password_screen.dart';
+import 'about_platform_screen.dart';
+import 'help_support_screen.dart';
+import 'notification_preferences_screen.dart';
+import 'data_management_screen.dart';
 
 class AdminSettingsScreen extends StatelessWidget {
   const AdminSettingsScreen({super.key});
@@ -48,40 +54,106 @@ class AdminSettingsScreen extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          _tile(
-            Icons.person,
-            "Admin Profile",
-            "Update admin information",
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const AdminProfileScreen(),
+                ),
+              );
+            },
+            child: _tile(
+              Icons.person,
+              "Admin Profile",
+              "Update admin information",
+            ),
           ),
 
-          _tile(
-            Icons.security,
-            "Security Settings",
-            "Password and authentication",
+         GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const ChangePasswordScreen(),
+                ),
+              );
+            },
+            child: _tile(
+              Icons.security,
+              "Security Settings",
+              "Password and authentication",
+            ),
           ),
 
-          _tile(
-            Icons.notifications,
-            "Notification Preferences",
-            "Manage admin alerts",
+         GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const NotificationPreferencesScreen(),
+                ),
+              );
+            },
+            child: _tile(
+              Icons.notifications,
+              "Notification Preferences",
+              "Manage admin alerts",
+            ),
           ),
 
-          _tile(
+         GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    const DataManagementScreen(),
+              ),
+            );
+          },
+          child: _tile(
             Icons.storage,
             "Data Management",
             "Storage and sync controls",
           ),
+        ),
 
-          _tile(
-            Icons.help_outline,
-            "Help & Support",
-            "Contact support team",
+         GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const HelpSupportScreen(),
+                ),
+              );
+            },
+            child: _tile(
+              Icons.help_outline,
+              "Help & Support",
+              "Contact support team",
+            ),
           ),
 
-          _tile(
-            Icons.info_outline,
-            "About Platform",
-            "SpaceFit Admin v1.0",
+         GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const AboutPlatformScreen(),
+                ),
+              );
+            },
+            child: _tile(
+              Icons.info_outline,
+              "About Platform",
+              "SpaceFit Admin v1.0",
+            ),
           ),
 
           const SizedBox(height: 30),

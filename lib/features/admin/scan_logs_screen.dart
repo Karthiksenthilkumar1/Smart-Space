@@ -63,8 +63,8 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
         borderRadius: BorderRadius.circular(14),
         child: Image.network(
           imageUrl,
-          height: 58,
-          width: 58,
+          height: 64,
+          width: 64,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return _fallbackIcon();
@@ -137,7 +137,7 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                 ...filteredLogs.map((log) {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
@@ -154,8 +154,54 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "${log["userName"] ?? "Unknown User"} • ${log["roomType"] ?? "Unknown Room"}",
+                              Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: log["scanType"] == "VIDEO"
+                                        ? Colors.orange.shade100
+                                        : Colors.blue.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        log["scanType"] == "VIDEO"
+                                            ? Icons.videocam
+                                            : Icons.photo_camera,
+                                        size: 14,
+                                        color: log["scanType"] == "VIDEO"
+                                            ? Colors.orange
+                                            : Colors.blue,
+                                      ),
+
+                                      const SizedBox(width: 4),
+
+                                      Text(
+                                        log["scanType"] == "VIDEO"
+                                            ? "Video Scan"
+                                            : "Image Scan",
+                                        style: TextStyle(
+                                          color: log["scanType"] == "VIDEO"
+                                              ? Colors.orange
+                                              : Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  log["scanType"] == "VIDEO"
+                                      ? "${log["userName"] ?? "Unknown User"} • Video Measurement"
+                                      : "${log["userName"] ?? "Unknown User"} • ${log["roomType"] ?? "Unknown Room"}",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
@@ -168,19 +214,30 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                                 log["userEmail"] ?? "No email",
                                 style: const TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 12,
+                                  fontSize: 11,
                                 ),
                               ),
 
                               const SizedBox(height: 8),
 
-                              Text(
-                                "${log["width"]?.toStringAsFixed(1) ?? "-"} × ${log["height"]?.toStringAsFixed(1) ?? "-"} × ${log["depth"]?.toStringAsFixed(1) ?? "-"} cm",
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.black87,
+                              if (log["scanType"] != "VIDEO")
+                                Text(
+                                  "${log["width"]?.toStringAsFixed(1) ?? "-"} × ${log["height"]?.toStringAsFixed(1) ?? "-"} × ${log["depth"]?.toStringAsFixed(1) ?? "-"} cm",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black87,
+                                  ),
                                 ),
-                              ),
+
+                              if (log["scanType"] == "VIDEO")
+                                const Text(
+                                  "Video Measurement Session",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),  
 
                               const SizedBox(height: 5),
 

@@ -6,7 +6,7 @@ class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
   static const String localNetworkUrl =
-      "http://172.30.4.77:8000";
+      "http://172.30.4.76:8000";
 
   static String baseUrl = localNetworkUrl;
   static String? authToken;
@@ -1043,6 +1043,131 @@ static Future<Map<String, dynamic>> deleteVideo(
   return {
     "statusCode": response.statusCode,
     "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>>
+getAdminProfile() async {
+
+  final response = await http.get(
+    Uri.parse("$baseUrl/api/admin/profile"),
+    headers: {
+      "Authorization": "Bearer $authToken",
+    },
+  );
+
+  final data =
+      jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>>
+updateAdminProfile({
+  required String name,
+  required String email,
+}) async {
+  final response = await http.put(
+    Uri.parse(
+      "$baseUrl/api/admin/profile",
+    ),
+    headers: {
+      "Content-Type":
+          "application/json",
+      "Authorization":
+          "Bearer $authToken",
+    },
+    body: jsonEncode({
+      "name": name,
+      "email": email,
+    }),
+  );
+
+  return {
+    "statusCode":
+        response.statusCode,
+    "data":
+        jsonDecode(response.body),
+  };
+}
+
+static Future<Map<String, dynamic>>
+changePassword({
+  required String currentPassword,
+  required String newPassword,
+}) async {
+
+  final response = await http.put(
+    Uri.parse(
+      "$baseUrl/api/admin/change-password",
+    ),
+    headers: {
+      "Content-Type":
+          "application/json",
+      "Authorization":
+          "Bearer $authToken",
+    },
+    body: jsonEncode({
+      "currentPassword":
+          currentPassword,
+      "newPassword":
+          newPassword,
+    }),
+  );
+
+  return {
+    "statusCode":
+        response.statusCode,
+    "data":
+        jsonDecode(response.body),
+  };
+}
+
+static Future<Map<String, dynamic>>
+getAdminSettings() async {
+
+  final response = await http.get(
+    Uri.parse(
+      "$baseUrl/api/admin/settings",
+    ),
+  );
+
+  return {
+    "statusCode": response.statusCode,
+    "data": jsonDecode(response.body),
+  };
+}
+
+static Future<Map<String, dynamic>>
+updateAdminSettings({
+  required bool scanAlerts,
+  required bool productSyncAlerts,
+  required bool systemNotifications,
+}) async {
+
+  final response = await http.put(
+    Uri.parse(
+      "$baseUrl/api/admin/settings",
+    ),
+    headers: {
+      "Content-Type":
+          "application/json",
+    },
+    body: jsonEncode({
+      "scanAlerts": scanAlerts,
+      "productSyncAlerts":
+          productSyncAlerts,
+      "systemNotifications":
+          systemNotifications,
+    }),
+  );
+
+  return {
+    "statusCode": response.statusCode,
+    "data": jsonDecode(response.body),
   };
 }
 }
