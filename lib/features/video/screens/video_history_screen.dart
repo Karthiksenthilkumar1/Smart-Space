@@ -147,8 +147,9 @@ class _VideoHistoryScreenState
                         crossAxisAlignment:
                             CrossAxisAlignment.start,
                         children: [
-                        const Text(
-                            "Video Scan",
+                        Text(
+                            video["title"] ??
+                                "Video Scan",
                             style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -183,6 +184,74 @@ class _VideoHistoryScreenState
 
                     Column(
                     children: [
+                        IconButton(
+                        icon: const Icon(
+                            Icons.edit,
+                            color: Colors.indigo,
+                        ),
+                        onPressed: () async {
+                            final controller =
+                                TextEditingController(
+                            text: video["title"] ??
+                                "Video Scan",
+                            );
+
+                            final newTitle =
+                                await showDialog<String>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                                title:
+                                    const Text("Rename Video"),
+                                content: TextField(
+                                controller: controller,
+                                ),
+                                actions: [
+                                TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context),
+                                    child:
+                                        const Text("Cancel"),
+                                ),
+                                ElevatedButton(
+                                    onPressed: () =>
+                                        Navigator.pop(
+                                    context,
+                                    controller.text,
+                                    ),
+                                    child:
+                                        const Text("Save"),
+                                ),
+                                ],
+                            ),
+                            );
+
+                            if (newTitle == null ||
+                                newTitle.trim().isEmpty) {
+                            return;
+                            }
+
+                            final result =
+                                await ApiService.updateVideo(
+                            videoId:
+                                video["id"].toString(),
+                            title: newTitle.trim(),
+                            );
+
+                            if (result["statusCode"] == 200) {
+                            loadVideos();
+
+                            if (!mounted) return;
+
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(
+                                const SnackBar(
+                                content:
+                                    Text("Video Renamed"),
+                                ),
+                            );
+                            }
+                        },
+                        ),
                         IconButton(
                         icon: const Icon(
                             Icons.delete,

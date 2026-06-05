@@ -82,6 +82,39 @@ class _HistoryScreenState
     }
   }
 
+  Future<void> _renameScan(
+    String id,
+    String roomType,
+  ) async {
+    final response =
+        await ApiService.updateScan(
+      scanId: id,
+      roomType: roomType,
+    );
+
+    if (response["statusCode"] == 200) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Scan renamed successfully",
+          ),
+        ),
+      );
+
+      _loadScans();
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Failed to rename scan",
+          ),
+        ),
+      );
+    }
+  }
+
   bool _isValidImageUrl(dynamic url) {
     if (url == null) return false;
 
@@ -254,12 +287,80 @@ class _HistoryScreenState
                                       _imageBox(
                                         scan["imageUrl"],
                                       ),
-                                      const SizedBox(
-                                          width: 14),
+
+                                      const SizedBox(width: 14),
+
                                       Expanded(
                                         child: Text(
-                                          "Saved Measurement",
+                                          scan["roomType"] ??
+                                              "Saved Measurement",
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
+                                      ),
+
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.indigo,
+                                        ),
+                                        onPressed: () async {
+                                          final controller =
+                                              TextEditingController(
+                                            text:
+                                                scan["roomType"] ??
+                                                "Saved Measurement",
+                                          );
+
+                                          final newName =
+                                              await showDialog<String>(
+                                            context: context,
+                                            builder: (_) => AlertDialog(
+                                              title: const Text(
+                                                "Rename Scan",
+                                              ),
+                                              content: TextField(
+                                                controller: controller,
+                                                decoration:
+                                                    const InputDecoration(
+                                                  hintText:
+                                                      "Enter scan name",
+                                                ),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                    context,
+                                                  ),
+                                                  child:
+                                                      const Text("Cancel"),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                    context,
+                                                    controller.text,
+                                                  ),
+                                                  child:
+                                                      const Text("Save"),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (newName == null ||
+                                              newName.trim().isEmpty) {
+                                            return;
+                                          }
+
+                                          await _renameScan(
+                                            scan["id"].toString(),
+                                            newName.trim(),
+                                          );
+                                        },
                                       ),
 
                                       IconButton(
@@ -285,9 +386,8 @@ class _HistoryScreenState
                                                     context,
                                                     false,
                                                   ),
-                                                  child: const Text(
-                                                    "Cancel",
-                                                  ),
+                                                  child:
+                                                      const Text("Cancel"),
                                                 ),
                                                 ElevatedButton(
                                                   onPressed: () =>
@@ -295,9 +395,8 @@ class _HistoryScreenState
                                                     context,
                                                     true,
                                                   ),
-                                                  child: const Text(
-                                                    "Delete",
-                                                  ),
+                                                  child:
+                                                      const Text("Delete"),
                                                 ),
                                               ],
                                             ),

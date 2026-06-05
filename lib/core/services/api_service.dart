@@ -40,6 +40,28 @@ class ApiService {
     };
   }
 
+  static Future<void> saveFcmToken(
+    String fcmToken,
+  ) async {
+    final url =
+        Uri.parse(
+      "$baseUrl/api/auth/fcm-token",
+    );
+
+    await http.put(
+      url,
+      headers: {
+        "Content-Type":
+            "application/json",
+        "Authorization":
+            "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "fcmToken": fcmToken,
+      }),
+    );
+  }
+
   static Future<Map<String, dynamic>> register({
     required String name,
     required String email,
@@ -1191,6 +1213,65 @@ updateAdminSettings({
   return {
     "statusCode": response.statusCode,
     "data": jsonDecode(response.body),
+  };
+}
+
+static Future<Map<String, dynamic>> updateScan({
+  required String scanId,
+  required String roomType,
+}) async {
+  final url =
+      Uri.parse("$baseUrl/api/scans/$scanId");
+
+  final response = await http.put(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $authToken",
+    },
+    body: jsonEncode({
+      "roomType": roomType,
+    }),
+  );
+
+  final data =
+      jsonDecode(response.body);
+
+  return {
+    "statusCode":
+        response.statusCode,
+    "data": data,
+  };
+}
+
+static Future<Map<String, dynamic>> updateVideo({
+  required String videoId,
+  required String title,
+}) async {
+  final url =
+      Uri.parse(
+    "$baseUrl/api/video-scans/$videoId",
+  );
+
+  final response = await http.put(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization":
+          "Bearer $authToken",
+    },
+    body: jsonEncode({
+      "title": title,
+    }),
+  );
+
+  final data =
+      jsonDecode(response.body);
+
+  return {
+    "statusCode":
+        response.statusCode,
+    "data": data,
   };
 }
 }

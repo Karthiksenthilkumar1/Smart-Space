@@ -148,6 +148,8 @@ class _FramePreviewScreenState
         measurements: measurements,
     );
 
+    print(result);
+
     if (!mounted) return;
 
     if (result["statusCode"] == 201) {

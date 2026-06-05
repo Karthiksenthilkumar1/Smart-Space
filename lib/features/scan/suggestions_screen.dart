@@ -126,17 +126,116 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
           const SizedBox(height: 22),
 
           if (recommendations.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Text(
-                "No recommendations found. Please try again later.",
-                style: TextStyle(color: Colors.grey),
-              ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                ),
+              ],
             ),
+            child: const Column(
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  size: 60,
+                  color: Colors.orange,
+                ),
+
+                SizedBox(height: 16),
+
+                Text(
+                  "No Products Fit This Space",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                SizedBox(height: 12),
+
+                Text(
+                  "The measured space is too small for the available products in our catalog.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Try:",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Measure a larger area",
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 8),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Scan another location",
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 8),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Ask admin to add smaller products",
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
 
           ...recommendations.map((product) {
             final category = product["category"] ?? "Furniture";

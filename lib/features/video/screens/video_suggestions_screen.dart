@@ -140,6 +140,42 @@ class _VideoSuggestionsScreenState
 
                 const Divider(height: 25),
 
+                if (products.isEmpty)
+                Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Column(
+                    children: [
+                        Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.orange,
+                        size: 50,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                        "No Products Fit This Measurement",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                        ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                        "The available space is too small for products in the catalog.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.grey,
+                        ),
+                        ),
+                    ],
+                    ),
+                ),
+
+                if (products.isNotEmpty)
                 ...products.take(5).map(
                   (product) {
                     return Card(

@@ -9,6 +9,7 @@ import '../../core/widgets/glass_card.dart';
 import '../scan/saved_screen.dart';
 import '../user/user_notifications_screen.dart';
 import '../video/video_capture_screen.dart';
+import '../../core/services/api_service.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -19,7 +20,43 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecentScans();
+  }
+
+  Future<void> _loadRecentScans() async {
+
+    final profileResponse =
+        await ApiService.getProfile();
+
+    if (profileResponse["statusCode"] == 200) {
+      userName =
+          profileResponse["data"]["user"]["name"];
+    }
+
+    final response =
+        await ApiService.getMyScans();
+
+    if (response["statusCode"] == 200) {
+      setState(() {
+        recentScans =
+            response["data"]["scans"];
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
   int currentIndex = 0;
+
+  bool isLoading = true;
+  List recentScans = [];
+  String userName = "User";
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +111,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
-                        "Hello, Karthik 👋",
+                        "Hello, $userName 👋",
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -141,45 +178,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Navigator.push(
                           context,
                           AppRoutes.fadeSlide(
-                            const ScanScreen(),
+                            const VideoCaptureScreen(),
                           ),
                         );
                       },
                       child: _actionCard(
-                        icon: Icons.image_outlined,
-                        title: "Upload Image",
-                        subtitle: "From Gallery",
+                        icon: Icons.videocam_outlined,
+                        title: "Room Video",
+                        subtitle: "360° Capture",
                       ),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 15),
-
-              AnimatedCardWrapper(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    AppRoutes.fadeSlide(
-                      const VideoCaptureScreen(),
-                    ),
-                  );
-                },
-                child: _actionCard(
-                  icon: Icons.videocam_outlined,
-                  title: "Room Video Capture",
-                  subtitle: "Record 360° Room",
-                ),
-              ),
-
               const SizedBox(height: 35),
               
               // RECENT HEADER
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
                     "Recent Measurements",
                     style: TextStyle(
                       fontSize: 20,
@@ -187,11 +207,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
 
-                  Text(
-                    "View All",
-                    style: TextStyle(
-                      color: Colors.indigo,
-                      fontWeight: FontWeight.w600,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        AppRoutes.fadeSlide(
+                          const HistoryScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "View All",
+                      style: TextStyle(
+                        color: Colors.indigo,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -199,26 +229,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 20),
 
-              // MEASUREMENTS LIST
               Expanded(
-                child: ListView(
-                  children: [
-                    _measurementTile(
-                      "Living Room",
-                      "12 May, 2024 • 10:30 AM",
-                    ),
+                child: isLoading
+                    ? const Center(
+                        child:
+                            CircularProgressIndicator(),
+                      )
+                    : ListView.builder(
+                        itemCount:
+                            recentScans.length > 3
+                                ? 3
+                                : recentScans.length,
+                        itemBuilder:
+                            (context, index) {
+                          final scan =
+                              recentScans[index];
 
-                    _measurementTile(
-                      "Kitchen Area",
-                      "11 May, 2024 • 04:20 PM",
-                    ),
-
-                    _measurementTile(
-                      "Study Table Space",
-                      "10 May, 2024 • 09:15 AM",
-                    ),
-                  ],
-                ),
+                          return _measurementTile(
+                            scan["roomType"] ??
+                                "Saved Measurement",
+                            scan["createdAt"]
+                                .toString()
+                                .substring(0, 10),
+                          );
+                        },
+                      ),
               ),
             ],
           ),

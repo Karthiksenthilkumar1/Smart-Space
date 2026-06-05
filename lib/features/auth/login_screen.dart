@@ -5,6 +5,7 @@ import '../admin/admin_dashboard_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,6 +39,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (response["statusCode"] == 200) {
       final userRole = response["data"]["user"]["role"];
+
+      final fcmToken =
+          await FirebaseMessaging
+              .instance
+              .getToken();
+
+      if (fcmToken != null) {
+        await ApiService.saveFcmToken(
+          fcmToken,
+        );
+
+        print(
+          "FCM Token Saved: $fcmToken",
+        );
+      }
 
       if (isUser && userRole != "USER") {
         ScaffoldMessenger.of(context).showSnackBar(

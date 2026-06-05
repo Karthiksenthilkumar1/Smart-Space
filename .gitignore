@@ -123,3 +123,4 @@ app.*.symbols
 ai/venv/
 __pycache__/
 *.pyc
+android/app/google-services.json
