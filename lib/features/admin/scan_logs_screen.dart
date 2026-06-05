@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_space/core/services/api_service.dart';
+import 'package:smart_space/features/admin/scan_detail_screen.dart';
 
 class ScanLogsScreen extends StatefulWidget {
   const ScanLogsScreen({super.key});
@@ -135,7 +136,19 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                   ),
 
                 ...filteredLogs.map((log) {
-                  return Container(
+                  return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ScanDetailScreen(
+                          scanId: log["id"],
+                          scanType: log["scanType"],
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
                     margin: const EdgeInsets.only(bottom: 15),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -272,8 +285,10 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                         ),
                       ],
                     ),
+                  ),
                   );
-                }),
+                }
+                ),
               ],
             ),
     );

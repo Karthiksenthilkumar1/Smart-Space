@@ -6,7 +6,7 @@ class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
   static const String localNetworkUrl =
-      "http://172.30.4.76:8000";
+      "http://172.30.4.77:8000";
 
   static String baseUrl = localNetworkUrl;
   static String? authToken;
@@ -510,6 +510,29 @@ class ApiService {
       "data": data,
     };
   }
+
+  static Future<Map<String, dynamic>> getScanLogDetails(
+  String scanType,
+  String scanId,
+) async {
+  final url = Uri.parse(
+    "$baseUrl/api/admin/scan-logs/$scanType/$scanId",
+  );
+
+  final response = await http.get(
+    url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  return {
+    "statusCode": response.statusCode,
+    "data": data,
+  };
+}
 
   static Future<Map<String, dynamic>> getCategories() async {
     final url = Uri.parse("$baseUrl/api/admin/categories");
