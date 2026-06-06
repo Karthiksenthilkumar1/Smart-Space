@@ -37,16 +37,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
           profileResponse["data"]["user"]["name"];
     }
 
+    final unreadResponse =
+      await ApiService.getUnreadCount();
+
+    print(
+      "REFRESHED COUNT = ${unreadResponse["data"]["count"]}"
+    );
+
+
     final response =
         await ApiService.getMyScans();
 
     if (response["statusCode"] == 200) {
       setState(() {
+
         recentScans =
             response["data"]["scans"];
+
+        if (unreadResponse["statusCode"] == 200) {
+          unreadCount =
+              unreadResponse["data"]["count"];
+          
+          print("COUNT FROM API = ${unreadResponse["data"]["count"]}");
+        }
+
         isLoading = false;
       });
-    } else {
+    }
+
+    else {
       setState(() {
         isLoading = false;
       });
@@ -57,6 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isLoading = true;
   List recentScans = [];
   String userName = "User";
+  int unreadCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -131,17 +151,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
 
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+
+                      await Navigator.push(
                         context,
                         AppRoutes.fadeSlide(
                           const UserNotificationsScreen(),
                         ),
                       );
+
+                      _loadRecentScans();
                     },
-                    child: const Icon(
-                      Icons.notifications_none,
-                      size: 28,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(
+                          Icons.notifications_none,
+                          size: 28,
+                        ),
+
+                        if (unreadCount > 0)
+                          Positioned(
+                            right: -6,
+                            top: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 18,
+                                minHeight: 18,
+                              ),
+                              child: Text(
+                                unreadCount > 99
+                                    ? "99+"
+                                    : unreadCount.toString(),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],

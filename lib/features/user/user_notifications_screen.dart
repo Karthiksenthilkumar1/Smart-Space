@@ -17,12 +17,15 @@ class _UserNotificationsScreenState
   @override
   void initState() {
     super.initState();
+     _markRead();
     _loadNotifications();
   }
 
   Future<void> _loadNotifications() async {
     final response =
         await ApiService.getUserNotifications();
+
+    print(response);
 
     if (response["statusCode"] == 200) {
       setState(() {
@@ -33,6 +36,13 @@ class _UserNotificationsScreenState
     } else {
       setState(() => isLoading = false);
     }
+  }
+
+  Future<void> _markRead() async {
+    final response =
+        await ApiService.markNotificationsRead();
+
+    print("MARK READ RESPONSE = $response");
   }
 
   IconData _getIcon(String title) {
