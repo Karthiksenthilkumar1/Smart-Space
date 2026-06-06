@@ -61,7 +61,7 @@ class _VideoPlayerScreenState
         final frameTime =
             (m["frameTimeMs"] ?? 0) as int;
 
-        return (currentTime - frameTime).abs() <= 1500;
+        return (currentTime - frameTime).abs() <= 300;
     }).toList();
   }
   
