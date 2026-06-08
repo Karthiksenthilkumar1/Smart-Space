@@ -6,6 +6,7 @@ import '../dashboard/dashboard_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,8 +21,31 @@ class _LoginScreenState extends State<LoginScreen> {
   bool rememberMe = false;
   bool isLoading = false;
 
+  static const String rememberedEmailKey = "remembered_email";
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    loadRememberedEmail();
+  }
+
+  Future<void> loadRememberedEmail() async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    final savedEmail =
+        prefs.getString(rememberedEmailKey);
+
+    if (savedEmail != null) {
+      setState(() {
+        emailController.text = savedEmail;
+        rememberMe = true;
+      });
+    }
+  }
 
   Future<void> _handleLogin() async {
     setState(() {
@@ -71,6 +95,20 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
         return;
+      }
+
+      final prefs =
+          await SharedPreferences.getInstance();
+
+      if (rememberMe) {
+        await prefs.setString(
+          rememberedEmailKey,
+          emailController.text.trim(),
+        );
+      } else {
+        await prefs.remove(
+          rememberedEmailKey,
+        );
       }
 
       Navigator.push(
