@@ -20,6 +20,8 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController controller;
 
+  double playbackSpeed = 1.0;
+
   List<Map<String, dynamic>> activeMeasurements = [];
 
   @override
@@ -88,28 +90,94 @@ for (var m in widget.measurements) {
       appBar: AppBar(
         title: const Text("Recorded Video"),
       ),
-      body: Center(
-        child: controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: controller.value.aspectRatio,
-                child: Stack(
-                  children: [
+      
+      body: Column(
+        children: [
 
-                    VideoPlayer(controller),
+          Expanded(
+            child: Center(
+              child: controller.value.isInitialized
+                  ? AspectRatio(
+                      aspectRatio:
+                          controller.value.aspectRatio,
+                      child: Stack(
+                        children: [
 
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter:
-                            ReplayMeasurementPainter(
-                          activeMeasurements,
-                        ),
+                          VideoPlayer(controller),
+
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter:
+                                  ReplayMeasurementPainter(
+                                activeMeasurements,
+                              ),
+                            ),
+                          ),
+
+                        ],
                       ),
-                    ),
+                    )
+                  : const CircularProgressIndicator(),
+            ),
+          ),
 
-                  ],
-                ),
-              )
-            : const CircularProgressIndicator(),
+          const SizedBox(height: 10),
+
+          Container(
+  color: Colors.yellow,
+  child: Row(
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+            children: [
+
+              ElevatedButton(
+                onPressed: () async {
+                  await controller.setPlaybackSpeed(
+                    0.25,
+                  );
+
+                  setState(() {
+                    playbackSpeed = 0.25;
+                  });
+                },
+                child: const Text("0.25x"),
+              ),
+
+              const SizedBox(width: 10),
+
+              ElevatedButton(
+                onPressed: () async {
+                  await controller.setPlaybackSpeed(
+                    0.5,
+                  );
+
+                  setState(() {
+                    playbackSpeed = 0.5;
+                  });
+                },
+                child: const Text("0.5x"),
+              ),
+
+              const SizedBox(width: 10),
+
+              ElevatedButton(
+                onPressed: () async {
+                  await controller.setPlaybackSpeed(
+                    1.0,
+                  );
+
+                  setState(() {
+                    playbackSpeed = 1.0;
+                  });
+                },
+                child: const Text("1x"),
+              ),
+            ],
+          ),
+          ),
+
+          const SizedBox(height: 20),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

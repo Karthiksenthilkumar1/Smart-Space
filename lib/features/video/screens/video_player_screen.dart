@@ -21,6 +21,8 @@ class _VideoPlayerScreenState
     extends State<VideoPlayerScreen> {
   late VideoPlayerController controller;
 
+  double playbackSpeed = 1.0;
+
   @override
   void initState() {
     super.initState();
@@ -138,12 +140,14 @@ class _VideoPlayerScreenState
     backgroundColor: Colors.black,
     foregroundColor: Colors.white,
     elevation: 0,
-    title: const Text("Video Player"),
+    title: const Text("Recorded Video"),
     ),
       body: controller.value.isInitialized
         ? Column(
             children: [
-            Stack(
+            Expanded(
+            child: Center(
+              child:Stack(
                 alignment: Alignment.center,
                 children: [
                 GestureDetector(
@@ -190,6 +194,8 @@ class _VideoPlayerScreenState
                     },
                     ),
                 ],
+              ),
+            ),
             ),
 
             Padding(
@@ -205,6 +211,79 @@ class _VideoPlayerScreenState
                     backgroundColor: Colors.white24,
                 ),
                 ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              children: [
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        playbackSpeed == 0.25
+                            ? Colors.indigo
+                            : Colors.grey.shade800,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    await controller.setPlaybackSpeed(
+                      0.25,
+                    );
+
+                    setState(() {
+                      playbackSpeed = 0.25;
+                    });
+                  },
+                  child: const Text("0.25x"),
+                ),
+
+                const SizedBox(width: 8),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        playbackSpeed == 0.5
+                            ? Colors.indigo
+                            : Colors.grey.shade800,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    await controller.setPlaybackSpeed(
+                      0.5,
+                    );
+
+                    setState(() {
+                      playbackSpeed = 0.5;
+                    });
+                  },
+                  child: const Text("0.5x"),
+                ),
+
+                const SizedBox(width: 8),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        playbackSpeed == 1.0
+                            ? Colors.indigo
+                            : Colors.grey.shade800,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    await controller.setPlaybackSpeed(
+                      1.0,
+                    );
+
+                    setState(() {
+                      playbackSpeed = 1.0;
+                    });
+                  },
+                  child: const Text("1x"),
+                ),
+              ],
             ),
 
             const SizedBox(height: 10),

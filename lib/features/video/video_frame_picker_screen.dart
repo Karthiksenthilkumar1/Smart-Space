@@ -28,6 +28,7 @@ class _VideoFramePickerScreenState
 
   bool isLoading = true;
   int pausedPositionMs = 0;
+  double playbackSpeed = 1.0;
 
   @override
   void initState() {
@@ -148,7 +149,7 @@ class _VideoFramePickerScreenState
         children: [
 
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.58,
+            height: MediaQuery.of(context).size.height * 0.50,
             width: double.infinity,
             child: FittedBox(
               fit: BoxFit.cover,
@@ -161,7 +162,7 @@ class _VideoFramePickerScreenState
           ),
 
           const SizedBox(height: 12),
-
+          
           Container(
             margin: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -212,6 +213,79 @@ class _VideoFramePickerScreenState
                       },
                     );
                   },
+                ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            playbackSpeed == 0.25
+                                ? Colors.indigo
+                                : Colors.grey.shade300,
+                        foregroundColor:
+                            playbackSpeed == 0.25
+                                ? Colors.white
+                                : Colors.black,
+                      ),
+                      onPressed: () async {
+                        await controller.setPlaybackSpeed(0.25);
+
+                        setState(() {
+                          playbackSpeed = 0.25;
+                        });
+                      },
+                      child: const Text("0.25x"),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            playbackSpeed == 0.5
+                                ? Colors.indigo
+                                : Colors.grey.shade300,
+                        foregroundColor:
+                            playbackSpeed == 0.5
+                                ? Colors.white
+                                : Colors.black,
+                      ),
+                      onPressed: () async {
+                        await controller.setPlaybackSpeed(0.5);
+
+                        setState(() {
+                          playbackSpeed = 0.5;
+                        });
+                      },
+                      child: const Text("0.5x"),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            playbackSpeed == 1.0
+                                ? Colors.indigo
+                                : Colors.grey.shade300,
+                        foregroundColor:
+                            playbackSpeed == 1.0
+                                ? Colors.white
+                                : Colors.black,
+                      ),
+                      onPressed: () async {
+                        await controller.setPlaybackSpeed(1.0);
+
+                        setState(() {
+                          playbackSpeed = 1.0;
+                        });
+                      },
+                      child: const Text("1.0x"),
+                    )
+                  ],
                 ),
 
                 IconButton(
