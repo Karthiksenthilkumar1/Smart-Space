@@ -31,4 +31,31 @@ class AppTheme {
       ),
     ),
   );
+
+  static ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
+
+    brightness: Brightness.dark,
+
+    scaffoldBackgroundColor: const Color(
+      0xFF121212,
+    ),
+
+    primaryColor: primaryColor,
+
+    colorScheme: const ColorScheme.dark(
+      primary: primaryColor,
+      secondary: secondaryColor,
+      surface: Color(0xFF1E1E1E),
+    ),
+
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      foregroundColor: Colors.white,
+    ),
+
+    cardColor: Color(0xFF1E1E1E),
+  );
 }

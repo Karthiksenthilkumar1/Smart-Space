@@ -5,6 +5,8 @@ import 'features/auth/login_screen.dart';
 import 'core/theme/app_theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
+import 'core/providers/theme_provider.dart';
 
 final FlutterLocalNotificationsPlugin
     flutterLocalNotificationsPlugin =
@@ -58,7 +60,12 @@ Future<void> main() async {
 
   debugPrint("FCM TOKEN = $token");
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -66,9 +73,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider =
+      Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
       theme: AppTheme.lightTheme,
+
+      darkTheme: AppTheme.darkTheme,
+
+      themeMode:
+          themeProvider.isDarkMode
+              ? ThemeMode.dark
+              : ThemeMode.light,
+
       home: LoginScreen(),
     );
   }

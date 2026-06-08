@@ -27,6 +27,7 @@ class _VideoFramePickerScreenState
   late VideoPlayerController controller;
 
   bool isLoading = true;
+  int pausedPositionMs = 0;
 
   @override
   void initState() {
@@ -48,9 +49,23 @@ class _VideoFramePickerScreenState
   }
 
   Future<void> useCurrentFrame() async {
+
+    await controller.pause();
+
+    pausedPositionMs =
+      controller.value.position.inMilliseconds;
+
+    await Future.delayed(
+      const Duration(milliseconds: 200),
+    );
+
     final position =
-        controller.value.position;
-    
+      controller.value.position;
+
+    print(
+      "PLAYER POSITION = ${position.inMilliseconds}",
+    );
+
     print(
       "Selected position: ${position.inMilliseconds}",
     );
@@ -69,6 +84,7 @@ class _VideoFramePickerScreenState
       quality: 100,
       timeMs: position.inMilliseconds,
     );
+
     print(
       "Frame path: $framePath",
     );
@@ -177,12 +193,22 @@ class _VideoFramePickerScreenState
                             0,
                             value.duration.inMilliseconds.toDouble(),
                           ),
-                      onChanged: (newValue) {
-                        controller.seekTo(
+                      onChanged: (newValue) async {
+                        await controller.seekTo(
                           Duration(
                             milliseconds: newValue.toInt(),
                           ),
                         );
+
+                        print(
+                          "SLIDER = ${newValue.toInt()}",
+                        );
+
+                        print(
+                          "AFTER SEEK = ${controller.value.position.inMilliseconds}",
+                        );
+
+                        setState(() {});
                       },
                     );
                   },
@@ -198,7 +224,24 @@ class _VideoFramePickerScreenState
                   onPressed: () {
                     setState(() {
                       if (controller.value.isPlaying) {
-                        controller.pause();
+
+                       controller.pause();
+
+                        Future.delayed(
+                          const Duration(milliseconds: 100),
+                          () {
+                            pausedPositionMs =
+                                controller.value.position.inMilliseconds;
+
+                            print(
+                              "PAUSED AT = $pausedPositionMs",
+                            );
+                          },
+                        );
+
+                        print(
+                          "PAUSED AT = $pausedPositionMs",
+                        );
                       } else {
                         controller.play();
                       }
