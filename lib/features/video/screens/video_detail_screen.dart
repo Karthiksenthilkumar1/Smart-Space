@@ -21,6 +21,7 @@ class VideoDetailScreen extends StatelessWidget {
         : jsonDecode(
             video["measurements"],
           );
+          print("FULL MEASUREMENTS = $measurements");
           final thumbnailUrl =
             video["thumbnailUrl"];
 

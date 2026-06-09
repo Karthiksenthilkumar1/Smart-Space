@@ -31,9 +31,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     );
 
 for (var m in widget.measurements) {
+  print("AAAAAAAAAAAAA $m");
+
   debugPrint(
     "MEASUREMENT => ${m["name"]} | frameTimeMs=${m["frameTimeMs"]}",
   );
+
 }
     super.initState();
 
@@ -197,101 +200,113 @@ for (var m in widget.measurements) {
   }
 }
 
-class ReplayMeasurementPainter
-    extends CustomPainter {
+class ReplayMeasurementPainter extends CustomPainter {
+  final List<Map<String, dynamic>> measurements;
 
-  final List<Map<String, dynamic>>
-      measurements;
-
-  ReplayMeasurementPainter(
-    this.measurements,
-  );
+  ReplayMeasurementPainter(this.measurements);
 
   @override
-  void paint(
-    Canvas canvas,
-    Size size,
-  ) {
-
-   debugPrint(
-    "PAINTER RECEIVED: ${measurements.length}",
-  );
+  void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
       ..color = Colors.green
       ..strokeWidth = 4;
 
+    final aiBoxPaint = Paint()
+      ..color = Colors.red
+      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke;
+
     final pointPaint = Paint()
-      ..color = Colors.red;
+      ..color = Colors.orange;
 
     for (var m in measurements) {
+      print("PAINTING TYPE = ${m["measurementType"]}");
+
+      if (m["measurementType"] == "AI" &&
+          m["aiX"] != null &&
+          m["aiY"] != null &&
+          m["aiWidth"] != null &&
+          m["aiHeight"] != null) {
+        const originalWidth = 720.0;
+        const originalHeight = 1280.0;
+
+        final scaleX = size.width / originalWidth;
+        final scaleY = size.height / originalHeight;
+
+        final rect = Rect.fromLTWH(
+          (m["aiX"] as num).toDouble() * scaleX,
+          (m["aiY"] as num).toDouble() * scaleY,
+          (m["aiWidth"] as num).toDouble() * scaleX,
+          (m["aiHeight"] as num).toDouble() * scaleY,
+        );
+
+        print("DRAWING AI RECT");
+        print("RECT = $rect");
+        print("CANVAS SIZE = $size");
+
+        canvas.drawRect(rect, aiBoxPaint);
+
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: "${m["name"]}\n${(m["distance"] as num).toStringAsFixed(1)} cm",
+            style: const TextStyle(
+              color: Colors.white,
+              backgroundColor: Colors.black,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(rect.left, rect.top - 28),
+        );
+
+        continue;
+      }
 
       final p1 = Offset(
-        (m["point1x"] as num)
-            .toDouble(),
-        (m["point1y"] as num)
-            .toDouble(),
+        (m["point1x"] as num).toDouble(),
+        (m["point1y"] as num).toDouble(),
       );
 
       final p2 = Offset(
-        (m["point2x"] as num)
-            .toDouble(),
-        (m["point2y"] as num)
-            .toDouble(),
+        (m["point2x"] as num).toDouble(),
+        (m["point2y"] as num).toDouble(),
       );
 
-      canvas.drawLine(
-        p1,
-        p2,
-        linePaint,
-      );
-
-      canvas.drawCircle(
-        p1,
-        6,
-        pointPaint,
-      );
-
-      canvas.drawCircle(
-        p2,
-        6,
-        pointPaint,
-      );
+      canvas.drawLine(p1, p2, linePaint);
+      canvas.drawCircle(p1, 6, pointPaint);
+      canvas.drawCircle(p2, 6, pointPaint);
 
       final midpoint = Offset(
         (p1.dx + p2.dx) / 2,
         (p1.dy + p2.dy) / 2,
       );
 
-      final textPainter =
-          TextPainter(
+      final textPainter = TextPainter(
         text: TextSpan(
-          text:
-              "${m["name"]}\n${(m["distance"] as num).toStringAsFixed(1)} cm",
+          text: "${m["name"]}\n${(m["distance"] as num).toStringAsFixed(1)} cm",
           style: const TextStyle(
             color: Colors.white,
-            backgroundColor:
-                Colors.black,
+            backgroundColor: Colors.black,
             fontSize: 12,
-            fontWeight:
-                FontWeight.bold,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        textDirection:
-            TextDirection.ltr,
+        textDirection: TextDirection.ltr,
       );
 
       textPainter.layout();
-
-      textPainter.paint(
-        canvas,
-        midpoint,
-      );
+      textPainter.paint(canvas, midpoint);
     }
   }
 
   @override
-  bool shouldRepaint(
-      covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
 }

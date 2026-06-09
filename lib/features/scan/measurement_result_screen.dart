@@ -44,6 +44,7 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
   }
 
   Future<void> _loadMeasurement() async {
+    debugPrint("LOAD MEASUREMENT CALLED");
 
     Map<String, dynamic>? aiData;
 
@@ -55,6 +56,8 @@ class _MeasurementResultScreenState extends State<MeasurementResultScreen> {
       if (aiResponse["statusCode"] == 200) {
         aiData = aiResponse["data"]["ai"];
       }
+
+      debugPrint("AI RESPONSE = $aiData");
     }
 
     final response = await ApiService.analyzeMeasurement(

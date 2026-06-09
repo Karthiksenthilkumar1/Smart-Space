@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
+import 'video_measurement_result_screen.dart';
 
 class FramePreviewScreen extends StatefulWidget {
   final String imagePath;
@@ -43,6 +44,16 @@ class _FramePreviewScreenState
   bool measurementMode = false;
   bool isCalibrated = false;
   bool readyToSave = false;
+  bool showMethodSelection = true;
+
+  double aiX = 0;
+  double aiY = 0;
+  double aiWidth = 0;
+  double aiHeight = 0;
+
+  double imageWidth = 736;
+  double imageHeight = 736;
+
   final GlobalKey imageKey = GlobalKey();
 
   List<Map<String, dynamic>> measurements = [];
@@ -58,7 +69,79 @@ class _FramePreviewScreenState
         widget.savedMeasurements!,
       );
     }
+    loadAIDetection();
    }
+
+   Future<void> loadAIDetection() async {
+
+    final aiResponse =
+        await ApiService.detectSpaceWithAI(
+      imagePath: widget.imagePath,
+    );
+
+    print("VIDEO AI RESPONSE = $aiResponse");
+
+    if (aiResponse["statusCode"] != 200) {
+      return;
+    }
+
+    final aiData =
+        aiResponse["data"]["ai"];
+
+    final detectedSpace =
+        aiData["detectedSpace"];
+
+    final imageSize =
+        aiData["imageSize"];
+
+    print("RAW IMAGE SIZE = $imageSize");
+
+    setState(() {
+
+      final detectedX = detectedSpace["x"].toDouble();
+      final detectedY = detectedSpace["y"].toDouble();
+      final detectedWidth = detectedSpace["width"].toDouble();
+      final detectedHeight = detectedSpace["height"].toDouble();
+
+      final actualImageWidth = imageSize["width"].toDouble();
+      final actualImageHeight = imageSize["height"].toDouble();
+
+      final isFullImageDetection =
+          detectedX == 0 &&
+          detectedY == 0 &&
+          detectedWidth == actualImageWidth &&
+          detectedHeight == actualImageHeight;
+
+      if (isFullImageDetection) {
+        aiX = actualImageWidth * 0.15;
+        aiY = actualImageHeight * 0.25;
+        aiWidth = actualImageWidth * 0.70;
+        aiHeight = actualImageHeight * 0.45;
+      } else {
+        aiX = detectedX;
+        aiY = detectedY;
+        aiWidth = detectedWidth;
+        aiHeight = detectedHeight;
+      }
+
+      print(
+        "AI RECT -> X:$aiX Y:$aiY W:$aiWidth H:$aiHeight",
+      );
+      print(
+        "IMAGE SIZE -> W:$imageWidth H:$imageHeight",
+      );
+
+      imageWidth =
+          imageSize["width"].toDouble();
+
+      imageHeight =
+          imageSize["height"].toDouble();
+
+      print(
+        "UPDATED IMAGE SIZE -> W:$imageWidth H:$imageHeight",
+      );
+    });
+  }
 
   double calculateDistance() {
     if (point1 == null || point2 == null) {
@@ -178,7 +261,10 @@ class _FramePreviewScreenState
       appBar: AppBar(
         title: const Text("Select Reference Object"),
       ),
-      body: GestureDetector(
+      body: Stack(
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
         onTapDown: (details) {
 
           final RenderBox? imageBox =
@@ -191,6 +277,11 @@ class _FramePreviewScreenState
             imageBox.localToGlobal(Offset.zero);
 
         final imageSize = imageBox.size;
+
+        print(
+          "DISPLAYED IMAGE SIZE -> "
+          "${imageSize.width} x ${imageSize.height}",
+        );
 
         final tapPosition = details.globalPosition;
 
@@ -224,8 +315,7 @@ class _FramePreviewScreenState
             }
           });
         },
-        child: Stack(
-          children: [
+        child: 
             Padding(
             padding: const EdgeInsets.only(
                 bottom: 180,
@@ -240,16 +330,37 @@ class _FramePreviewScreenState
                 ),
             ),
             ),
-            
+          ),
 
-            CustomPaint(
+
+            if (aiWidth > 0 && aiHeight > 0)
+            Positioned(
+              left: aiX * 280 / imageWidth,
+              top: aiY * 500 / imageHeight,
+              child: IgnorePointer(
+                child: Container(
+                  width: aiWidth * 280 / imageWidth,
+                  height: aiHeight * 500 / imageHeight,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.red,
+                      width: 4,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+                                
+
+            IgnorePointer( child: CustomPaint(
               size: Size.infinite,
               painter: MeasurementPainter(
                 currentFrameMeasurements,
               ),
             ),
+            ),
 
-            CustomPaint(
+            IgnorePointer(child: CustomPaint(
                 size: Size.infinite,
                 painter: ActiveMeasurementPainter(
                     point1,
@@ -257,6 +368,88 @@ class _FramePreviewScreenState
                     measurePoint1,
                     measurePoint2,
                 ),
+            ),
+            ),
+
+            if (showMethodSelection)
+            Positioned(
+              bottom: 40,
+              left: 20,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.10),
+                      blurRadius: 15,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+
+                    const Text(
+                      "Choose Measurement Method",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text(
+                          "AI Measure",
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  VideoMeasurementResultScreen(
+                                    imagePath: widget.imagePath,
+                                    videoPath: widget.videoPath,
+                                    frameTimeMs: widget.frameTimeMs,
+                                    aiX: aiX,
+                                    aiY: aiY,
+                                    aiWidth: aiWidth,
+                                    aiHeight: aiHeight,
+                                  ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.straighten),
+                        label: const Text(
+                          "Manual Measure",
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            showMethodSelection = false;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
 
             // Calibration Point 1
@@ -353,7 +546,11 @@ class _FramePreviewScreenState
                 ),
               ),
 
-            if (point1 != null && point2 != null)
+            
+
+            if (!showMethodSelection &&
+                point1 != null &&
+                point2 != null)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -630,7 +827,6 @@ class _FramePreviewScreenState
               ),
           ],
         ),
-      ),
     );
   }
     }
