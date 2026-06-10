@@ -18,6 +18,12 @@ class VideoMeasurementPainter
       ..strokeWidth = 3;
 
     for (var m in measurements) {
+      if (m["point1x"] == null ||
+          m["point1y"] == null ||
+          m["point2x"] == null ||
+          m["point2y"] == null) {
+        continue;
+      }
       final p1 = Offset(
         (m["point1x"] as num)
             .toDouble() + 20,

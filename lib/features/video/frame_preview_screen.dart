@@ -184,16 +184,7 @@ class _FramePreviewScreenState
     }
 
     final measuredCm = calculateMeasuredCm();
-
-    if (selectedDimension == "Width") {
-      objectWidth = measuredCm;
-    } else if (selectedDimension == "Height") {
-      objectHeight = measuredCm;
-    } else if (selectedDimension == "Depth") {
-      objectDepth = measuredCm;
-    }
-
-    currentFrameMeasurements.add({
+    final sideMeasurement = {
       "name": selectedDimension,
       "dimensionType": selectedDimension,
       "distance": measuredCm,
@@ -203,7 +194,18 @@ class _FramePreviewScreenState
       "point1y": measurePoint1!.dy,
       "point2x": measurePoint2!.dx,
       "point2y": measurePoint2!.dy,
-    });
+    };
+
+    if (selectedDimension == "Width") {
+      objectWidth = measuredCm;
+    } else if (selectedDimension == "Height") {
+      objectHeight = measuredCm;
+    } else if (selectedDimension == "Depth") {
+      objectDepth = measuredCm;
+    }
+
+    measurements.add(sideMeasurement);
+    currentFrameMeasurements.add(sideMeasurement);
 
     measurePoint1 = null;
     measurePoint2 = null;
@@ -211,6 +213,50 @@ class _FramePreviewScreenState
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("$selectedDimension saved")),
+    );
+
+    setState(() {});
+  }
+
+  void completeObject() {
+    if (objectWidth == null &&
+        objectHeight == null &&
+        objectDepth == null) {
+      return;
+    }
+
+    double width =
+        objectWidth ??
+        ((objectHeight ?? objectDepth!) / 1.5);
+
+    double height =
+        objectHeight ??
+        (width * 1.5);
+
+    double depth =
+        objectDepth ??
+        (width * 0.6);
+
+    measurements.add({
+      "name": "Measured Object",
+      "measurementType": "OBJECT_3D",
+      "width": width,
+      "height": height,
+      "depth": depth,
+      "area": width * depth,
+      "volume": width * height * depth,
+      "frameTimeMs": widget.frameTimeMs,
+      "frameImage": widget.imagePath,
+    });
+
+    objectWidth = null;
+    objectHeight = null;
+    objectDepth = null;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Object completed"),
+      ),
     );
 
     setState(() {});
@@ -250,58 +296,39 @@ class _FramePreviewScreenState
   }
 
   Future<void> saveVideoData() async {
-    final finalObject = calculateObject3D();
+    final objectCount = measurements
+        .where((m) => m["measurementType"] == "OBJECT_3D")
+        .length;
 
-    if (finalObject == null) {
+    if (objectCount == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Measure at least one dimension"),
+          content: Text("Complete at least one object"),
         ),
       );
       return;
     }
 
-    final objectMeasurement = {
-      "name": "Measured Object",
-      "measurementType": "OBJECT_3D",
-      "width": finalObject["width"],
-      "height": finalObject["height"],
-      "depth": finalObject["depth"],
-      "area": finalObject["area"],
-      "volume": finalObject["volume"],
-      "frameTimeMs": widget.frameTimeMs,
-      "frameImage": widget.imagePath,
-    };
-
     final result = await ApiService.saveVideoScan(
       videoPath: widget.videoPath,
       thumbnailUrl: widget.imagePath,
       pixelsPerCm: pixelsPerCm,
-      measurements: [
-        objectMeasurement,
-        ...currentFrameMeasurements,
-      ],
+      measurements: measurements,
     );
 
     print(result);
 
     if (!mounted) return;
 
-    if (result["statusCode"] == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Video Uploaded Successfully"),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result["statusCode"] == 201
+              ? "Video Uploaded Successfully"
+              : result["data"]["message"] ?? "Upload Failed",
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result["data"]["message"] ?? "Upload Failed",
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -366,23 +393,26 @@ class _FramePreviewScreenState
         },
         child: 
             Padding(
-            padding: const EdgeInsets.only(
-                bottom: 180,
-            ),
-            child: Center(
+            padding: EdgeInsets.zero,
+            child: Align(
+                alignment: Alignment.topCenter,
                 child: Container(
                 key: imageKey,
-                child: Image.file(
-                    File(widget.imagePath),
-                    fit: BoxFit.contain,
+                child: InteractiveViewer(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.61,
+                    child: Image.file(
+                      File(widget.imagePath),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
                 ),
             ),
             ),
           ),
-
-
-            if (aiWidth > 0 && aiHeight > 0)
+                                
+          if (showMethodSelection && aiWidth > 0 && aiHeight > 0)
             Positioned(
               left: aiX * 280 / imageWidth,
               top: aiY * 500 / imageHeight,
@@ -399,8 +429,6 @@ class _FramePreviewScreenState
                 ),
               ),
             ),
-                                
-
             IgnorePointer( child: CustomPaint(
               size: Size.infinite,
               painter: MeasurementPainter(
@@ -605,6 +633,10 @@ class _FramePreviewScreenState
                 left: 0,
                 right: 0,
                 child: Container(
+                constraints: BoxConstraints(
+                  maxHeight:
+                      MediaQuery.of(context).size.height * 0.30,
+                ),
                 padding: const EdgeInsets.fromLTRB(
                     20,
                     20,
@@ -624,8 +656,6 @@ class _FramePreviewScreenState
                     ),
                     ],
                 ),
-                child: SizedBox(
-                  height: 220,
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -674,31 +704,45 @@ class _FramePreviewScreenState
 
                       const SizedBox(height: 10),
 
-                      ElevatedButton(
-                        onPressed: () {
-                          final actualCm =
-                              double.tryParse(
-                                  sizeController.text);
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final actualCm =
+                                double.tryParse(
+                                    sizeController.text);
 
-                          if (actualCm == null ||
-                              actualCm <= 0) {
-                            return;
-                          }
+                            if (actualCm == null ||
+                                actualCm <= 0) {
+                              return;
+                            }
 
+                            setState(() {
+                              pixelsPerCm =
+                                  calculateDistance() /
+                                      actualCm;
 
-                          setState(() {
-                            pixelsPerCm =
-                                calculateDistance() /
-                                    actualCm;
-
-                            isCalibrated = true;
-                            measurementMode = true;
-                          });
-                        },
-                        child:
-                            const Text("CALIBRATE"),
+                              isCalibrated = true;
+                              measurementMode = true;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: const Icon(Icons.check_circle),
+                          label: const Text(
+                            "CALIBRATE",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-
                       const SizedBox(height: 8),
 
                     OutlinedButton.icon(
@@ -794,10 +838,56 @@ class _FramePreviewScreenState
                             measurePoint2 != null)
                         Padding(
                             padding: const EdgeInsets.only(top: 10),
-                            child: ElevatedButton(
-                            onPressed: saveMeasurement,
-                            child: const Text("SAVE MEASUREMENT"),
+                            child: SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              onPressed: saveMeasurement,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              icon: const Icon(Icons.straighten),
+                              label: const Text(
+                                "SAVE SIDE",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
+                          ),
+                        ),
+
+                        if (isCalibrated &&
+                          (objectWidth != null ||
+                          objectHeight != null ||
+                          objectDepth != null))
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              onPressed: completeObject,
+                              icon: const Icon(Icons.check_circle),
+                              label: const Text(
+                                "COMPLETE OBJECT",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
                         ),
 
                       if (pixelsPerCm > 0)
@@ -820,30 +910,57 @@ class _FramePreviewScreenState
 
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.pop(
-                                    context,
-                                    measurements,
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.photo_library,
-                                ),
-                                label: const Text(
-                                  "SELECT ANOTHER FRAME",
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.pop(
+                                      context,
+                                      measurements,
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.indigo,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.video_collection),
+                                  label: const Text(
+                                    "SELECT ANOTHER FRAME",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                             Padding(
                                 padding: const EdgeInsets.only(top: 10),
+                                child: SizedBox(
+                                width: double.infinity,
+                                height: 52,
                                 child: ElevatedButton.icon(
-                                onPressed: saveVideoData,
-                                icon: const Icon(Icons.save),
-                                label: const Text(
+                                  onPressed: saveVideoData,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.indigo,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.save),
+                                  label: const Text(
                                     "SAVE VIDEO",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                ),
+                              ),
                             ),
 
                         if (measurements.isNotEmpty)
@@ -863,10 +980,10 @@ class _FramePreviewScreenState
                         ),
                         const SizedBox(width: 8),
                         Text(
-                            "${measurements.length} Measurements Saved",
-                            style: const TextStyle(
+                          "${measurements.where((m) => m["measurementType"] == "OBJECT_3D").length} Objects Completed",
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            ),
+                          ),
                         ),
                         ],
                     ),
@@ -876,7 +993,6 @@ class _FramePreviewScreenState
                 ),
               ),
                 ),
-              ),
           ],
         ),
     );

@@ -174,12 +174,19 @@ class VideoDetailScreen extends StatelessWidget {
                     ),
                     ),
 
-                    Positioned.fill(
-                        child: CustomPaint(
-                         painter: measurement_painter.VideoMeasurementPainter(
-                          measurements,
-                        ),
-                        ),
+                    Builder(
+                        builder: (_) {
+                            print("VIDEO DETAIL COUNT = ${measurements.length}");
+                            print("VIDEO DETAIL MEASUREMENTS = $measurements");
+
+                            return Positioned.fill(
+                            child: CustomPaint(
+                                painter: measurement_painter.VideoMeasurementPainter(
+                                measurements,
+                                ),
+                            ),
+                            );
+                        },
                     ),
                 ],
                 ),

@@ -58,16 +58,32 @@ class _VideoMeasurementResultScreenState
 
       setState(() {
         width =
-            measurement["width"].toDouble();
+    (measurement["width"] ?? 0).toDouble();
 
         height =
-            measurement["height"].toDouble();
+            (measurement["height"] ?? 0).toDouble();
 
         depth =
-            measurement["depth"].toDouble();
+            (measurement["depth"] ?? 0).toDouble();
 
         area =
-            measurement["area"].toDouble();
+            (measurement["area"] ?? 0).toDouble();
+
+        if (width == 0 && widget.aiWidth > 0) {
+          width = widget.aiWidth / 10;
+        }
+
+        if (height == 0 && widget.aiHeight > 0) {
+          height = widget.aiHeight / 10;
+        }
+
+        if (depth == 0 && width > 0) {
+          depth = width * 0.6;
+        }
+
+        if (area == 0 && width > 0 && depth > 0) {
+          area = (width * depth) / 10000;
+        }
 
         roomType =
             measurement["roomType"] ??
@@ -77,6 +93,24 @@ class _VideoMeasurementResultScreenState
       });
     } else {
       setState(() {
+        width = widget.aiWidth > 0
+            ? widget.aiWidth / 10
+            : 0;
+
+        height = widget.aiHeight > 0
+            ? widget.aiHeight / 10
+            : 0;
+
+        depth = width > 0
+            ? width * 0.6
+            : 0;
+
+        area = width > 0 && depth > 0
+            ? (width * depth) / 10000
+            : 0;
+
+        roomType = "Detected Space";
+
         isLoading = false;
       });
     }
