@@ -25,6 +25,12 @@ class VideoDetailScreen extends StatelessWidget {
           final thumbnailUrl =
             video["thumbnailUrl"];
 
+          final objectCount = measurements
+            .where(
+            (m) => m["measurementType"] == "OBJECT_3D",
+            )
+            .length;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Video Details"),
@@ -72,7 +78,9 @@ class VideoDetailScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 Text(
-                    "${measurements.length} Measurement(s)",
+                    objectCount == 1
+                        ? "1 Measurement"
+                        : "$objectCount Measurements",
                     style: const TextStyle(
                     color: Colors.indigo,
                     fontWeight: FontWeight.w600,
@@ -200,6 +208,10 @@ class VideoDetailScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final m = measurements[index];
 
+                  if (m["measurementType"] != "OBJECT_3D") {
+                    return const SizedBox.shrink();
+                  }
+
                   return Container(
                 margin: const EdgeInsets.only(
                     bottom: 12,
@@ -237,8 +249,21 @@ class VideoDetailScreen extends StatelessWidget {
                         ),
                     ),
 
-                    subtitle: Text(
-                        "${(m["distance"] as num).toDouble().toStringAsFixed(1)} cm",
+                    subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                            Text(
+                            "W:${m["width"]?.toStringAsFixed(1)} "
+                            "H:${m["height"]?.toStringAsFixed(1)} "
+                            "D:${m["depth"]?.toStringAsFixed(1)}",
+                            ),
+                            Text(
+                            "Area: ${m["area"]?.toStringAsFixed(2)} cm²",
+                            ),
+                            Text(
+                            "Volume: ${m["volume"]?.toStringAsFixed(2)} cm³",
+                            ),
+                        ],
                     ),
 
                     trailing: IconButton(

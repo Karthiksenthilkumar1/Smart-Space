@@ -60,10 +60,17 @@ class _VideoPlayerScreenState
         controller.value.position.inMilliseconds;
 
     return widget.measurements.where((m) {
-        final frameTime =
-            (m["frameTimeMs"] ?? 0) as int;
+      if (m["point1x"] == null ||
+          m["point1y"] == null ||
+          m["point2x"] == null ||
+          m["point2y"] == null) {
+        return false;
+      }
 
-        return (currentTime - frameTime).abs() <= 300;
+      final frameTime =
+          (m["frameTimeMs"] as num?)?.toInt() ?? 0;
+
+      return (currentTime - frameTime).abs() <= 300;
     }).toList();
   }
   

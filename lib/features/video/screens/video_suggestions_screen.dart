@@ -32,33 +32,54 @@ class _VideoSuggestionsScreenState
 
   Future<void> _loadRecommendations() async {
     for (var measurement in widget.measurements) {
-      final distance =
-          (measurement["distance"] as num)
-              .toDouble();
+        if (measurement["measurementType"] != "OBJECT_3D") {
+            continue;
+        }
+        
+        double width;
+        double height;
+        double depth;
+        double area;
 
-      final response =
-          await ApiService.getRecommendations(
-        width: distance,
-        height: distance,
-        depth: distance,
-        area: distance,
+
+        if (measurement["measurementType"] == "OBJECT_3D") {
+        width = (measurement["width"] as num).toDouble();
+        height = (measurement["height"] as num).toDouble();
+        depth = (measurement["depth"] as num).toDouble();
+        area = (measurement["area"] as num).toDouble();
+        } else {
+        final distance =
+            (measurement["distance"] as num).toDouble();
+
+        width = distance;
+        height = distance;
+        depth = distance;
+        area = distance;
+        }
+
+        final response =
+            await ApiService.getRecommendations(
+        width: width,
+        height: height,
+        depth: depth,
+        area: area,
         roomType: widget.roomType,
-      );
+        );
 
-      if (response["statusCode"] == 200) {
+        if (response["statusCode"] == 200) {
         recommendationGroups.add({
-          "measurement": measurement,
-          "products":
-              response["data"]["recommendations"] ??
-                  [],
+            "measurement": measurement,
+            "products":
+                response["data"]["recommendations"] ??
+                    [],
         });
-      }
+        }
     }
 
     setState(() {
-      isLoading = false;
+        isLoading = false;
     });
-  }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +150,9 @@ class _VideoSuggestionsScreenState
                 const SizedBox(height: 6),
 
                 Text(
-                  "${(measurement["distance"] as num).toDouble().toStringAsFixed(1)} cm",
+                    measurement["measurementType"] == "OBJECT_3D"
+                        ? "W:${(measurement["width"] as num).toDouble().toStringAsFixed(1)}  H:${(measurement["height"] as num).toDouble().toStringAsFixed(1)}  D:${(measurement["depth"] as num).toDouble().toStringAsFixed(1)}"
+                        : "${(measurement["distance"] as num).toDouble().toStringAsFixed(1)} cm",
                   style:
                       const TextStyle(
                     color: Colors.indigo,

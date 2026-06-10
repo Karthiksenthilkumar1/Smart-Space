@@ -45,6 +45,11 @@ class _FramePreviewScreenState
   bool isCalibrated = false;
   bool readyToSave = false;
   bool showMethodSelection = true;
+  String selectedDimension = "Width";
+
+  double? objectWidth;
+  double? objectHeight;
+  double? objectDepth;
 
   double aiX = 0;
   double aiY = 0;
@@ -174,61 +179,108 @@ class _FramePreviewScreenState
   }
 
   void saveMeasurement() {
-    if (measurementNameController.text.isEmpty) {
-        return;
+    if (measurePoint1 == null || measurePoint2 == null) {
+      return;
     }
 
-    measurements.add({
-    "name": measurementNameController.text,
-    "distance": calculateMeasuredCm(),
+    final measuredCm = calculateMeasuredCm();
 
-    "frameTimeMs": widget.frameTimeMs,
-    "frameImage": widget.imagePath,
-
-    "point1x": measurePoint1!.dx,
-    "point1y": measurePoint1!.dy,
-
-    "point2x": measurePoint2!.dx,
-    "point2y": measurePoint2!.dy,
-    });
+    if (selectedDimension == "Width") {
+      objectWidth = measuredCm;
+    } else if (selectedDimension == "Height") {
+      objectHeight = measuredCm;
+    } else if (selectedDimension == "Depth") {
+      objectDepth = measuredCm;
+    }
 
     currentFrameMeasurements.add({
-      "name": measurementNameController.text,
-      "distance": calculateMeasuredCm(),
-
+      "name": selectedDimension,
+      "dimensionType": selectedDimension,
+      "distance": measuredCm,
       "frameTimeMs": widget.frameTimeMs,
       "frameImage": widget.imagePath,
-
       "point1x": measurePoint1!.dx,
       "point1y": measurePoint1!.dy,
-
       "point2x": measurePoint2!.dx,
       "point2y": measurePoint2!.dy,
     });
-
-    measurementNameController.clear();
 
     measurePoint1 = null;
     measurePoint2 = null;
     readyToSave = true;
 
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-        content: Text("Measurement Saved"),
-        ),
+      SnackBar(content: Text("$selectedDimension saved")),
     );
-    print(measurements);
 
     setState(() {});
   }
 
+  Map<String, double>? calculateObject3D() {
+    if (objectWidth == null &&
+        objectHeight == null &&
+        objectDepth == null) {
+      return null;
+    }
+
+    double width = objectWidth ?? 0;
+    double height = objectHeight ?? 0;
+    double depth = objectDepth ?? 0;
+
+    if (objectWidth != null) {
+      width = objectWidth!;
+      height = objectHeight ?? width * 1.5;
+      depth = objectDepth ?? width * 0.6;
+    } else if (objectHeight != null) {
+      height = objectHeight!;
+      width = objectWidth ?? height / 1.5;
+      depth = objectDepth ?? width * 0.6;
+    } else if (objectDepth != null) {
+      depth = objectDepth!;
+      width = objectWidth ?? depth / 0.6;
+      height = objectHeight ?? width * 1.5;
+    }
+
+    return {
+      "width": width,
+      "height": height,
+      "depth": depth,
+      "area": (width * depth),
+    };
+  }
+
   Future<void> saveVideoData() async {
-    final result =
-        await ApiService.saveVideoScan(
-        videoPath: widget.videoPath,
-        thumbnailUrl: widget.imagePath,
-        pixelsPerCm: pixelsPerCm,
-        measurements: measurements,
+    final finalObject = calculateObject3D();
+
+    if (finalObject == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Measure at least one dimension"),
+        ),
+      );
+      return;
+    }
+
+    final objectMeasurement = {
+      "name": "Measured Object",
+      "measurementType": "OBJECT_3D",
+      "width": finalObject["width"],
+      "height": finalObject["height"],
+      "depth": finalObject["depth"],
+      "area": finalObject["area"],
+      "volume": finalObject["volume"],
+      "frameTimeMs": widget.frameTimeMs,
+      "frameImage": widget.imagePath,
+    };
+
+    final result = await ApiService.saveVideoScan(
+      videoPath: widget.videoPath,
+      thumbnailUrl: widget.imagePath,
+      pixelsPerCm: pixelsPerCm,
+      measurements: [
+        objectMeasurement,
+        ...currentFrameMeasurements,
+      ],
     );
 
     print(result);
@@ -236,24 +288,21 @@ class _FramePreviewScreenState
     if (!mounted) return;
 
     if (result["statusCode"] == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text(
-            "Video Uploaded Successfully",
-            ),
+          content: Text("Video Uploaded Successfully"),
         ),
-        );
+      );
     } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-            result["data"]["message"] ??
-                "Upload Failed",
-            ),
+          content: Text(
+            result["data"]["message"] ?? "Upload Failed",
+          ),
         ),
-        );
+      );
     }
-    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -705,18 +754,22 @@ class _FramePreviewScreenState
 
                             const SizedBox(height: 10),
 
-                            TextField(
-                                controller: measurementNameController,
-                                style: const TextStyle(
-                                    color: Colors.black87,
-                                ),
-                                decoration: const InputDecoration(
-                                hintText: "Measurement Name",
-                                hintStyle: TextStyle(
-                                    color: Colors.grey,
-                                ),
+                            DropdownButtonFormField<String>(
+                              value: selectedDimension,
+                              decoration: const InputDecoration(
+                                labelText: "Select Dimension",
                                 border: OutlineInputBorder(),
-                                ),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: "Width", child: Text("Width")),
+                                DropdownMenuItem(value: "Height", child: Text("Height")),
+                                DropdownMenuItem(value: "Depth", child: Text("Depth")),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedDimension = value!;
+                                });
+                              },
                             ),
 
                             const SizedBox(height: 10),
@@ -726,7 +779,6 @@ class _FramePreviewScreenState
                                 setState(() {
                                 measurePoint1 = null;
                                 measurePoint2 = null;
-                                measurementNameController.clear();
                                 });
                             },
                             icon: const Icon(Icons.refresh),

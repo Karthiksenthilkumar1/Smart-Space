@@ -222,6 +222,12 @@ class ReplayMeasurementPainter extends CustomPainter {
     for (var m in measurements) {
       print("PAINTING TYPE = ${m["measurementType"]}");
 
+      if (m["point1x"] == null ||
+          m["point1y"] == null ||
+          m["point2x"] == null ||
+          m["point2y"] == null) {
+        continue;
+      }
       if (m["measurementType"] == "AI" &&
           m["aiX"] != null &&
           m["aiY"] != null &&

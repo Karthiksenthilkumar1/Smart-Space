@@ -60,9 +60,16 @@ class _VideoHistoryScreenState
         int measurementCount = 0;
 
         try {
-        measurementCount =
-            jsonDecode(video["measurements"])
-                .length;
+        final measurements =
+            jsonDecode(video["measurements"]);
+
+        measurementCount = measurements
+            .where(
+                (m) =>
+                    m["measurementType"] ==
+                    "OBJECT_3D",
+            )
+            .length;
         } catch (_) {
         measurementCount = 0;
         }
