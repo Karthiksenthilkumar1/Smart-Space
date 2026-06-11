@@ -5,12 +5,10 @@ class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() =>
-      _NotificationsScreenState();
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState
-    extends State<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen> {
   bool isLoading = true;
 
   List notifications = [];
@@ -26,8 +24,7 @@ class _NotificationsScreenState
 
     if (response["statusCode"] == 200) {
       setState(() {
-        notifications =
-            response["data"]["notifications"];
+        notifications = response["data"]["notifications"];
         isLoading = false;
       });
     } else {
@@ -58,9 +55,7 @@ class _NotificationsScreenState
                         labelText: "Title",
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     TextField(
                       controller: messageController,
                       maxLines: 3,
@@ -68,9 +63,7 @@ class _NotificationsScreenState
                         labelText: "Message",
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     DropdownButtonFormField<String>(
                       value: targetRole,
                       decoration: const InputDecoration(
@@ -101,13 +94,11 @@ class _NotificationsScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(context, false),
+                  onPressed: () => Navigator.pop(context, false),
                   child: const Text("Cancel"),
                 ),
                 ElevatedButton(
-                  onPressed: () =>
-                      Navigator.pop(context, true),
+                  onPressed: () => Navigator.pop(context, true),
                   child: const Text("Create"),
                 ),
               ],
@@ -118,8 +109,7 @@ class _NotificationsScreenState
     );
 
     if (shouldCreate == true) {
-      final response =
-          await ApiService.createNotification(
+      final response = await ApiService.createNotification(
         title: titleController.text.trim(),
         message: messageController.text.trim(),
         targetRole: targetRole,
@@ -128,8 +118,7 @@ class _NotificationsScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            response["data"]["message"] ??
-                "Notification created",
+            response["data"]["message"] ?? "Notification created",
           ),
         ),
       );
@@ -141,16 +130,14 @@ class _NotificationsScreenState
   Future<void> _deleteNotification(
     String notificationId,
   ) async {
-    final response =
-        await ApiService.deleteNotification(
+    final response = await ApiService.deleteNotification(
       notificationId: notificationId,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          response["data"]["message"] ??
-              "Notification deleted",
+          response["data"]["message"] ?? "Notification deleted",
         ),
       ),
     );
@@ -196,284 +183,239 @@ class _NotificationsScreenState
         onPressed: _showCreateNotificationDialog,
         child: const Icon(Icons.add),
       ),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF4F46E5),
-                        Color(0xFF6366F1),
-                      ],
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(22),
+      body: RefreshIndicator(
+        onRefresh: _loadNotifications,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 250),
+                  Center(
+                    child: CircularProgressIndicator(),
                   ),
-                  child: const Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.notifications_active,
-                        color: Colors.white,
-                        size: 35,
-                      ),
-                      SizedBox(height: 15),
-                      Text(
-                        "Admin Notifications",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "Manage alerts, updates and announcements.",
-                        style: TextStyle(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 25),
-
-                if (notifications.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 60),
-                      child: Text(
-                        "No notifications found",
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                ...notifications.map((notification) {
-                  final role =
-                      notification["targetRole"] ??
-                          "ALL";
-
-                  final roleColor =
-                      _getNotificationColor(role);
-
-                  return Container(
-                    margin:
-                        const EdgeInsets.only(bottom: 15),
-                    padding: const EdgeInsets.all(18),
+                ],
+              )
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.grey.shade200,
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF4F46E5),
+                          Color(0xFF6366F1),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(22),
                     ),
-                    child: Column(
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 52,
-                              width: 52,
-                              decoration: BoxDecoration(
-                                color:
-                                    Colors.indigo.shade50,
-                                borderRadius:
-                                    BorderRadius.circular(
-                                        14),
-                              ),
-                              child: Icon(
-                                _getNotificationIcon(
-                                  notification["title"] ??
-                                      "",
-                                ),
-                                color: Colors.indigo,
-                              ),
-                            ),
-
-                            const SizedBox(width: 15),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          notification[
-                                                  "title"] ??
-                                              "",
-                                          style:
-                                              const TextStyle(
-                                            fontWeight:
-                                                FontWeight
-                                                    .bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-
-                                      Container(
-                                        padding:
-                                            const EdgeInsets
-                                                .symmetric(
-                                          horizontal: 10,
-                                          vertical: 5,
-                                        ),
-                                        decoration:
-                                            BoxDecoration(
-                                          color: roleColor
-                                              .withOpacity(
-                                                  0.12),
-                                          borderRadius:
-                                              BorderRadius
-                                                  .circular(
-                                                      20),
-                                        ),
-                                        child: Text(
-                                          role,
-                                          style:
-                                              TextStyle(
-                                            color:
-                                                roleColor,
-                                            fontWeight:
-                                                FontWeight
-                                                    .bold,
-                                            fontSize: 11,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 8),
-
-                                  Text(
-                                    notification[
-                                            "message"] ??
-                                        "",
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      height: 1.5,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 10),
-
-                                  Text(
-                                    notification[
-                                            "createdAt"] ??
-                                        "",
-                                    style: const TextStyle(
-                                      color: Colors.indigo,
-                                      fontSize: 12,
-                                      fontWeight:
-                                          FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        Icon(
+                          Icons.notifications_active,
+                          color: Colors.white,
+                          size: 35,
                         ),
-
-                        const SizedBox(height: 16),
-
-                        Row(
-                          children: [
-                            const Spacer(),
-
-                            TextButton.icon(
-                              onPressed: () async {
-                                final confirm =
-                                    await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) =>
-                                      AlertDialog(
-                                    title: const Text(
-                                      "Delete Notification",
-                                    ),
-                                    content: const Text(
-                                      "Delete this notification?",
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                          context,
-                                          false,
-                                        ),
-                                        child: const Text(
-                                            "Cancel"),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                          context,
-                                          true,
-                                        ),
-                                        child: const Text(
-                                          "Delete",
-                                          style: TextStyle(
-                                            color:
-                                                Colors.red,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (confirm == true) {
-                                  _deleteNotification(
-                                    notification["id"],
-                                  );
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                                size: 18,
-                              ),
-                              label: const Text(
-                                "Delete",
-                                style: TextStyle(
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ),
-                          ],
+                        SizedBox(height: 15),
+                        Text(
+                          "Admin Notifications",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Manage alerts, updates and announcements.",
+                          style: TextStyle(
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ),
-                  );
-                }),
-              ],
-            ),
+                  ),
+                  const SizedBox(height: 25),
+                  if (notifications.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: Text(
+                          "No notifications found",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ...notifications.map((notification) {
+                    final role = notification["targetRole"] ?? "ALL";
+
+                    final roleColor = _getNotificationColor(role);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 15),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.grey.shade200,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 52,
+                                width: 52,
+                                decoration: BoxDecoration(
+                                  color: Colors.indigo.shade50,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Icon(
+                                  _getNotificationIcon(
+                                    notification["title"] ?? "",
+                                  ),
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            notification["title"] ?? "",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: roleColor.withOpacity(0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            role,
+                                            style: TextStyle(
+                                              color: roleColor,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      notification["message"] ?? "",
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      notification["createdAt"] ?? "",
+                                      style: const TextStyle(
+                                        color: Colors.indigo,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              const Spacer(),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                        "Delete Notification",
+                                      ),
+                                      content: const Text(
+                                        "Delete this notification?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(
+                                            context,
+                                            false,
+                                          ),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(
+                                            context,
+                                            true,
+                                          ),
+                                          child: const Text(
+                                            "Delete",
+                                            style: TextStyle(
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    _deleteNotification(
+                                      notification["id"],
+                                    );
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  "Delete",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+      ),
     );
   }
 }

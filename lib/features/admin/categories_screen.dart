@@ -100,177 +100,181 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _showAddCategoryDialog,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add Category"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                if (categories.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 40),
-                      child: Text(
-                        "No categories found",
-                        style: TextStyle(color: Colors.grey),
+      body: RefreshIndicator(
+        onRefresh: _loadCategories,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 250),
+                  Center(child: CircularProgressIndicator()),
+                ],
+              )
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _showAddCategoryDialog,
+                    icon: const Icon(Icons.add),
+                    label: const Text("Add Category"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
-
-                ...categories.map((category) {
-                  final categoryName =
-                    category["name"] ?? "Uncategorized";
-
-                  return GestureDetector(
-                    onTap: () async {
-                      final refresh = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CategoryDetailScreen(
-                            category: category,
-                          ),
+                  const SizedBox(height: 20),
+                  if (categories.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: Text(
+                          "No categories found",
+                          style: TextStyle(color: Colors.grey),
                         ),
-                      );
-
-                      if (refresh == true) {
-                        _loadCategories();
-                      }
-                    },
-                    child: Container(
-                    margin: const EdgeInsets.only(bottom: 15),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.grey.shade200),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 65,
-                          width: 65,
-                          decoration: BoxDecoration(
-                            color: Colors.indigo.shade50,
-                            borderRadius: BorderRadius.circular(14),
+                  ...categories.map((category) {
+                    final categoryName = category["name"] ?? "Uncategorized";
+
+                    return GestureDetector(
+                      onTap: () async {
+                        final refresh = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CategoryDetailScreen(
+                              category: category,
+                            ),
                           ),
-                          child: Icon(
-                            _getCategoryIcon(categoryName),
-                            color: Colors.indigo,
-                          ),
+                        );
+
+                        if (refresh == true) {
+                          _loadCategories();
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 15),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
-
-                        const SizedBox(width: 15),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                categoryName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 65,
+                              width: 65,
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.shade50,
+                                borderRadius: BorderRadius.circular(14),
                               ),
-
-                              const SizedBox(height: 6),
-
-                              Text(
-                                "${category["productCount"]} products",
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                ),
+                              child: Icon(
+                                _getCategoryIcon(categoryName),
+                                color: Colors.indigo,
                               ),
-                            ],
-                          ),
-                        ),
-
-                        IconButton(
-                          tooltip: "Add Product",
-                          icon: const Icon(
-                            Icons.add_box_outlined,
-                            color: Colors.indigo,
-                          ),
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ProductCatalogScreen(),
-                              ),
-                            );
-
-                            _loadCategories();
-                          },
-                        ),
-
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                          ),
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("Delete Category"),
-                                content: Text(
-                                  "Delete ${categoryName} category?",
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: const Text("Cancel"),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    categoryName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text(
-                                      "Delete",
-                                      style: TextStyle(color: Colors.red),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "${category["productCount"]} products",
+                                    style: const TextStyle(
+                                      color: Colors.grey,
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-
-                            if (confirm == true) {
-                              final response = await ApiService.deleteCategory(
-                                categoryId: category["id"],
-                              );
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    response["data"]["message"] ??
-                                        "Category delete failed",
+                            ),
+                            IconButton(
+                              tooltip: "Add Product",
+                              icon: const Icon(
+                                Icons.add_box_outlined,
+                                color: Colors.indigo,
+                              ),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ProductCatalogScreen(),
                                   ),
-                                ),
-                              );
+                                );
 
-                              _loadCategories();
-                            }
-                          },
+                                _loadCategories();
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("Delete Category"),
+                                    content: Text(
+                                      "Delete ${categoryName} category?",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text(
+                                          "Delete",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm == true) {
+                                  final response =
+                                      await ApiService.deleteCategory(
+                                    categoryId: category["id"],
+                                  );
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        response["data"]["message"] ??
+                                            "Category delete failed",
+                                      ),
+                                    ),
+                                  );
+
+                                  _loadCategories();
+                                }
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    ),
-                  );
-                }),
-              ],
-            ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+      ),
     );
   }
 }

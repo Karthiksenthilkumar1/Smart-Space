@@ -103,194 +103,186 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                TextField(
-                  onChanged: _filterLogs,
-                  decoration: InputDecoration(
-                    hintText: "Search by user, email or room",
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                if (filteredLogs.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 40),
-                      child: Text(
-                        "No scan logs found",
-                        style: TextStyle(color: Colors.grey),
+      body: RefreshIndicator(
+        onRefresh: _loadScanLogs,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 250),
+                  Center(child: CircularProgressIndicator()),
+                ],
+              )
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: [
+                  TextField(
+                    onChanged: _filterLogs,
+                    decoration: InputDecoration(
+                      hintText: "Search by user, email or room",
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                   ),
-
-                ...filteredLogs.map((log) {
-                  return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ScanDetailScreen(
-                          scanId: log["id"],
-                          scanType: log["scanType"],
+                  const SizedBox(height: 20),
+                  if (filteredLogs.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: Text(
+                          "No scan logs found",
+                          style: TextStyle(color: Colors.grey),
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 15),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.grey.shade200),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _scanImage(log["imageUrl"]),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: log["scanType"] == "VIDEO"
-                                        ? Colors.orange.shade100
-                                        : Colors.blue.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        log["scanType"] == "VIDEO"
-                                            ? Icons.videocam
-                                            : Icons.photo_camera,
-                                        size: 14,
-                                        color: log["scanType"] == "VIDEO"
-                                            ? Colors.orange
-                                            : Colors.blue,
-                                      ),
-
-                                      const SizedBox(width: 4),
-
-                                      Text(
-                                        log["scanType"] == "VIDEO"
-                                            ? "Video Scan"
-                                            : "Image Scan",
-                                        style: TextStyle(
+                  ...filteredLogs.map((log) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ScanDetailScreen(
+                              scanId: log["id"],
+                              scanType: log["scanType"],
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 15),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _scanImage(log["imageUrl"]),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: log["scanType"] == "VIDEO"
+                                          ? Colors.orange.shade100
+                                          : Colors.blue.shade100,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          log["scanType"] == "VIDEO"
+                                              ? Icons.videocam
+                                              : Icons.photo_camera,
+                                          size: 14,
                                           color: log["scanType"] == "VIDEO"
                                               ? Colors.orange
                                               : Colors.blue,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 11,
                                         ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          log["scanType"] == "VIDEO"
+                                              ? "Video Scan"
+                                              : "Image Scan",
+                                          style: TextStyle(
+                                            color: log["scanType"] == "VIDEO"
+                                                ? Colors.orange
+                                                : Colors.blue,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    log["scanType"] == "VIDEO"
+                                        ? "${log["userName"] ?? "Unknown User"} • Video Measurement"
+                                        : "${log["userName"] ?? "Unknown User"} • ${log["roomType"] ?? "Unknown Room"}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    log["userEmail"] ?? "No email",
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  if (log["scanType"] != "VIDEO")
+                                    Text(
+                                      "${log["width"]?.toStringAsFixed(1) ?? "-"} × ${log["height"]?.toStringAsFixed(1) ?? "-"} × ${log["depth"]?.toStringAsFixed(1) ?? "-"} cm",
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black87,
                                       ),
-                                    ],
+                                    ),
+                                  if (log["scanType"] == "VIDEO")
+                                    const Text(
+                                      "Video Measurement Session",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    _formatDate(log["createdAt"]),
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                Text(
-                                  log["scanType"] == "VIDEO"
-                                      ? "${log["userName"] ?? "Unknown User"} • Video Measurement"
-                                      : "${log["userName"] ?? "Unknown User"} • ${log["roomType"] ?? "Unknown Room"}",
-                                style: const TextStyle(
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                "Completed",
+                                style: TextStyle(
+                                  color: Colors.green,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-
-                              const SizedBox(height: 5),
-
-                              Text(
-                                log["userEmail"] ?? "No email",
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 11,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              if (log["scanType"] != "VIDEO")
-                                Text(
-                                  "${log["width"]?.toStringAsFixed(1) ?? "-"} × ${log["height"]?.toStringAsFixed(1) ?? "-"} × ${log["depth"]?.toStringAsFixed(1) ?? "-"} cm",
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-
-                              if (log["scanType"] == "VIDEO")
-                                const Text(
-                                  "Video Measurement Session",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),  
-
-                              const SizedBox(height: 5),
-
-                              Text(
-                                _formatDate(log["createdAt"]),
-                                style: const TextStyle(
-                                  color: Colors.grey,
                                   fontSize: 12,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade100,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            "Completed",
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  );
-                }
-                ),
-              ],
-            ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+      ),
     );
   }
 }

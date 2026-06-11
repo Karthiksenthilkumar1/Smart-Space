@@ -9,8 +9,7 @@ class RecommendationRulesScreen extends StatefulWidget {
       _RecommendationRulesScreenState();
 }
 
-class _RecommendationRulesScreenState
-    extends State<RecommendationRulesScreen> {
+class _RecommendationRulesScreenState extends State<RecommendationRulesScreen> {
   bool isLoading = true;
   List rules = [];
 
@@ -183,13 +182,11 @@ class _RecommendationRulesScreenState
     );
 
     if (shouldUpdate == true) {
-      final response =
-          await ApiService.updateRecommendationRule(
+      final response = await ApiService.updateRecommendationRule(
         ruleId: rule["id"],
         roomType: roomController.text.trim(),
         category: categoryController.text.trim(),
-        priority:
-            int.tryParse(priorityController.text.trim()) ?? 1,
+        priority: int.tryParse(priorityController.text.trim()) ?? 1,
         isActive: isActive,
       );
 
@@ -261,235 +258,216 @@ class _RecommendationRulesScreenState
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _showCreateRuleDialog,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Create Rule"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+      body: RefreshIndicator(
+        onRefresh: _loadRules,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 250),
+                  Center(
+                    child: CircularProgressIndicator(),
                   ),
-                ),
-
-                const SizedBox(height: 20),
-
-                if (rules.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 40),
-                      child: Text(
-                        "No recommendation rules found",
-                        style: TextStyle(color: Colors.grey),
+                ],
+              )
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _showCreateRuleDialog,
+                    icon: const Icon(Icons.add),
+                    label: const Text("Create Rule"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
-
-                ...rules.map((rule) {
-                  final isActive = rule["isActive"] == true;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.grey.shade200,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                  const SizedBox(height: 20),
+                  if (rules.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: Text(
+                          "No recommendation rules found",
+                          style: TextStyle(color: Colors.grey),
                         ),
-                      ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              height: 48,
-                              width: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.indigo.shade50,
-                                borderRadius:
-                                    BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.rule,
-                                color: Colors.indigo,
-                              ),
-                            ),
+                  ...rules.map((rule) {
+                    final isActive = rule["isActive"] == true;
 
-                            const SizedBox(width: 14),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    rule["roomType"],
-                                    style: const TextStyle(
-                                      fontWeight:
-                                          FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Category: ${rule["category"]}",
-                                    style: TextStyle(
-                                      color:
-                                          Colors.grey.shade600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? Colors.green.shade50
-                                    : Colors.orange.shade50,
-                                borderRadius:
-                                    BorderRadius.circular(30),
-                              ),
-                              child: Text(
-                                isActive
-                                    ? "Active"
-                                    : "Inactive",
-                                style: TextStyle(
-                                  color: isActive
-                                      ? Colors.green.shade700
-                                      : Colors.orange.shade700,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.grey.shade200,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                height: 48,
+                                width: 48,
+                                decoration: BoxDecoration(
+                                  color: Colors.indigo.shade50,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.rule,
+                                  color: Colors.indigo,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius:
-                                BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.auto_awesome,
-                                color: Colors.indigo,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 14),
                               Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      rule["roomType"],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Category: ${rule["category"]}",
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? Colors.green.shade50
+                                      : Colors.orange.shade50,
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
                                 child: Text(
-                                  "Priority ${rule["priority"]} recommendation boost for ${rule["category"]} products.",
+                                  isActive ? "Active" : "Inactive",
                                   style: TextStyle(
-                                    color:
-                                        Colors.grey.shade700,
-                                    height: 1.4,
+                                    color: isActive
+                                        ? Colors.green.shade700
+                                        : Colors.orange.shade700,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  _editRule(rule);
-                                },
-                                icon: const Icon(
-                                  Icons.edit_outlined,
+                          const SizedBox(height: 18),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.auto_awesome,
+                                  color: Colors.indigo,
                                   size: 18,
                                 ),
-                                label: const Text("Edit"),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.indigo,
-                                  side: BorderSide(
-                                    color:
-                                        Colors.indigo.shade100,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    "Priority ${rule["priority"]} recommendation boost for ${rule["category"]} products.",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      height: 1.4,
+                                    ),
                                   ),
-                                  padding:
-                                      const EdgeInsets.symmetric(
-                                    vertical: 13,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    _editRule(rule);
+                                  },
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(14),
+                                  label: const Text("Edit"),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.indigo,
+                                    side: BorderSide(
+                                      color: Colors.indigo.shade100,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-
-                            const SizedBox(width: 12),
-
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  _confirmDeleteRule(rule["id"]);
-                                },
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                ),
-                                label: const Text("Delete"),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color(0xFFFFF1F1),
-                                  foregroundColor:
-                                      Colors.red.shade700,
-                                  elevation: 0,
-                                  padding:
-                                      const EdgeInsets.symmetric(
-                                    vertical: 13,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    _confirmDeleteRule(rule["id"]);
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    size: 18,
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(14),
+                                  label: const Text("Delete"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFFF1F1),
+                                    foregroundColor: Colors.red.shade700,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ],
-            ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+      ),
     );
   }
 }

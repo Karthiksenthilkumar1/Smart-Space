@@ -23,174 +23,163 @@ class AdminSettingsScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const CircleAvatar(
-            radius: 45,
-            backgroundColor: Colors.indigo,
-            child: Icon(
-              Icons.admin_panel_settings,
-              size: 45,
-              color: Colors.white,
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          const Center(
-            child: Text(
-              "Admin Panel",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.delayed(
+            const Duration(milliseconds: 400),
+          );
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: [
+            const CircleAvatar(
+              radius: 45,
+              backgroundColor: Colors.indigo,
+              child: Icon(
+                Icons.admin_panel_settings,
+                size: 45,
+                color: Colors.white,
               ),
             ),
-          ),
-
-          const Center(
-            child: Text(
-              "Manage system settings and controls",
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-
-          const SizedBox(height: 30),
-
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const AdminProfileScreen(),
+            const SizedBox(height: 15),
+            const Center(
+              child: Text(
+                "Admin Panel",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            },
-            child: _tile(
-              Icons.person,
-              "Admin Profile",
-              "Update admin information",
-            ),
-          ),
-
-         GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const ChangePasswordScreen(),
-                ),
-              );
-            },
-            child: _tile(
-              Icons.security,
-              "Security Settings",
-              "Password and authentication",
-            ),
-          ),
-
-         GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const NotificationPreferencesScreen(),
-                ),
-              );
-            },
-            child: _tile(
-              Icons.notifications,
-              "Notification Preferences",
-              "Manage admin alerts",
-            ),
-          ),
-
-         GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    const DataManagementScreen(),
               ),
-            );
-          },
-          child: _tile(
-            Icons.storage,
-            "Data Management",
-            "Storage and sync controls",
-          ),
+            ),
+            const Center(
+              child: Text(
+                "Manage system settings and controls",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 30),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AdminProfileScreen(),
+                  ),
+                );
+              },
+              child: _tile(
+                Icons.person,
+                "Admin Profile",
+                "Update admin information",
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ChangePasswordScreen(),
+                  ),
+                );
+              },
+              child: _tile(
+                Icons.security,
+                "Security Settings",
+                "Password and authentication",
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationPreferencesScreen(),
+                  ),
+                );
+              },
+              child: _tile(
+                Icons.notifications,
+                "Notification Preferences",
+                "Manage admin alerts",
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DataManagementScreen(),
+                  ),
+                );
+              },
+              child: _tile(
+                Icons.storage,
+                "Data Management",
+                "Storage and sync controls",
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const HelpSupportScreen(),
+                  ),
+                );
+              },
+              child: _tile(
+                Icons.help_outline,
+                "Help & Support",
+                "Contact support team",
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AboutPlatformScreen(),
+                  ),
+                );
+              },
+              child: _tile(
+                Icons.info_outline,
+                "About Platform",
+                "SpaceFit Admin v1.0",
+              ),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+
+                await prefs.remove("remembered_email");
+
+                ApiService.authToken = null;
+
+                if (!context.mounted) return;
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LoginScreen(),
+                  ),
+                  (route) => false,
+                );
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text("Logout"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ],
         ),
-
-         GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const HelpSupportScreen(),
-                ),
-              );
-            },
-            child: _tile(
-              Icons.help_outline,
-              "Help & Support",
-              "Contact support team",
-            ),
-          ),
-
-         GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const AboutPlatformScreen(),
-                ),
-              );
-            },
-            child: _tile(
-              Icons.info_outline,
-              "About Platform",
-              "SpaceFit Admin v1.0",
-            ),
-          ),
-
-          const SizedBox(height: 30),
-
-          ElevatedButton.icon(
-            onPressed: () async {
-              final prefs =
-                  await SharedPreferences.getInstance();
-
-              await prefs.remove("remembered_email");
-
-              ApiService.authToken = null;
-
-              if (!context.mounted) return;
-
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const LoginScreen(),
-                ),
-                (route) => false,
-              );
-            },
-            icon: const Icon(Icons.logout),
-            label: const Text("Logout"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -211,9 +200,7 @@ class AdminSettingsScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, color: Colors.indigo),
-
           const SizedBox(width: 15),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,9 +209,7 @@ class AdminSettingsScreen extends StatelessWidget {
                   title,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
                   subtitle,
                   style: const TextStyle(color: Colors.grey),
@@ -232,7 +217,6 @@ class AdminSettingsScreen extends StatelessWidget {
               ],
             ),
           ),
-
           const Icon(Icons.arrow_forward_ios, size: 16),
         ],
       ),

@@ -7,12 +7,10 @@ class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({super.key});
 
   @override
-  State<ProductCatalogScreen> createState() =>
-      _ProductCatalogScreenState();
+  State<ProductCatalogScreen> createState() => _ProductCatalogScreenState();
 }
 
-class _ProductCatalogScreenState
-    extends State<ProductCatalogScreen> {
+class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   bool isLoading = true;
 
   List products = [];
@@ -45,11 +43,9 @@ class _ProductCatalogScreenState
       searchQuery = query;
 
       filteredProducts = products.where((product) {
-        final name =
-            product["name"].toString().toLowerCase();
+        final name = product["name"].toString().toLowerCase();
 
-        final category =
-            product["category"].toString().toLowerCase();
+        final category = product["category"].toString().toLowerCase();
 
         return name.contains(query.toLowerCase()) ||
             category.contains(query.toLowerCase());
@@ -76,8 +72,7 @@ class _ProductCatalogScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            response["data"]["message"] ??
-                "Failed to delete product",
+            response["data"]["message"] ?? "Failed to delete product",
           ),
         ),
       );
@@ -88,14 +83,12 @@ class _ProductCatalogScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
-
       appBar: AppBar(
         title: const Text("Product Catalog"),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.black,
-
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -103,8 +96,7 @@ class _ProductCatalogScreenState
               final refresh = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      const AddProductScreen(),
+                  builder: (_) => const AddProductScreen(),
                 ),
               );
 
@@ -115,262 +107,200 @@ class _ProductCatalogScreenState
           ),
         ],
       ),
-
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    12,
-                    16,
-                    0,
+      body: RefreshIndicator(
+        onRefresh: _loadProducts,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 250),
+                  Center(
+                    child: CircularProgressIndicator(),
                   ),
-                  child: TextField(
-                    onChanged: _filterProducts,
-                    decoration: InputDecoration(
-                      hintText: "Search products...",
-                      prefixIcon:
-                          const Icon(Icons.search),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+                ],
+              )
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      16,
+                      12,
+                      16,
+                      0,
+                    ),
+                    child: TextField(
+                      onChanged: _filterProducts,
+                      decoration: InputDecoration(
+                        hintText: "Search products...",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
 
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount:
-                        filteredProducts.length,
-
-                    itemBuilder: (context, index) {
-                      final product =
-                          filteredProducts[index];
-
-                      return Container(
-                        margin:
-                            const EdgeInsets.only(
-                          bottom: 14,
-                        ),
-
-                        padding:
-                            const EdgeInsets.all(16),
-
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(
-                            18,
+                        return Container(
+                          margin: const EdgeInsets.only(
+                            bottom: 14,
                           ),
-                        ),
-
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(
-                                12,
-                              ),
-
-                              child:
-                                  product["imageUrl"] !=
-                                              null &&
-                                          product[
-                                                  "imageUrl"]
-                                              .toString()
-                                              .trim()
-                                              .startsWith(
-                                                "http",
-                                              )
-                                      ? Image.network(
-                                          product["imageUrl"].toString(),
-                                          height: 56,
-                                          width: 56,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(
-                                          height: 56,
-                                          width: 56,
-                                          color: Colors
-                                              .indigo
-                                              .shade50,
-
-                                          child:
-                                              const Icon(
-                                            Icons
-                                                .inventory_2,
-                                            color: Colors
-                                                .indigo,
-                                            size: 30,
-                                          ),
-                                        ),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              18,
                             ),
-
-                            const SizedBox(width: 14),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-
-                                children: [
-                                  Text(
-                                    product["name"] ??
-                                        "Product",
-
-                                    style:
-                                        const TextStyle(
-                                      fontWeight:
-                                          FontWeight
-                                              .bold,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-
-                                  Text(
-                                    product[
-                                            "dimensions"] ??
-                                        "No dimensions",
-
-                                    style:
-                                        const TextStyle(
-                                      color:
-                                          Colors.grey,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-
-                                  Text(
-                                    "₹${product["price"]}",
-
-                                    style:
-                                        const TextStyle(
-                                      color: Colors
-                                          .indigo,
-                                      fontWeight:
-                                          FontWeight
-                                              .bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit_outlined,
-                                color: Colors.indigo,
-                              ),
-
-                              onPressed: () async {
-                                final refresh =
-                                    await Navigator
-                                        .push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        EditProductScreen(
-                                      product:
-                                          product,
-                                    ),
-                                  ),
-                                );
-
-                                if (refresh == true) {
-                                  _loadProducts();
-                                }
-                              },
-                            ),
-
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-
-                              onPressed: () async {
-                                final confirm =
-                                    await showDialog<
-                                        bool>(
-                                  context: context,
-
-                                  builder: (context) =>
-                                      AlertDialog(
-                                    title: const Text(
-                                      "Delete Product",
-                                    ),
-
-                                    content: Text(
-                                      "Are you sure you want to delete ${product["name"]}?",
-                                    ),
-
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                          context,
-                                          false,
-                                        ),
-
-                                        child:
-                                            const Text(
-                                          "Cancel",
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  12,
+                                ),
+                                child: product["imageUrl"] != null &&
+                                        product["imageUrl"]
+                                            .toString()
+                                            .trim()
+                                            .startsWith(
+                                              "http",
+                                            )
+                                    ? Image.network(
+                                        product["imageUrl"].toString(),
+                                        height: 56,
+                                        width: 56,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        height: 56,
+                                        width: 56,
+                                        color: Colors.indigo.shade50,
+                                        child: const Icon(
+                                          Icons.inventory_2,
+                                          color: Colors.indigo,
+                                          size: 30,
                                         ),
                                       ),
-
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                          context,
-                                          true,
-                                        ),
-
-                                        child:
-                                            const Text(
-                                          "Delete",
-
-                                          style:
-                                              TextStyle(
-                                            color: Colors
-                                                .red,
-                                          ),
-                                        ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product["name"] ?? "Product",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    ],
-                                  ),
-                                );
-
-                                if (confirm == true) {
-                                  _deleteProduct(
-                                    product["id"],
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      product["dimensions"] ?? "No dimensions",
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      "₹${product["price"]}",
+                                      style: const TextStyle(
+                                        color: Colors.indigo,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit_outlined,
+                                  color: Colors.indigo,
+                                ),
+                                onPressed: () async {
+                                  final refresh = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => EditProductScreen(
+                                        product: product,
+                                      ),
+                                    ),
                                   );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+
+                                  if (refresh == true) {
+                                    _loadProducts();
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                        "Delete Product",
+                                      ),
+                                      content: Text(
+                                        "Are you sure you want to delete ${product["name"]}?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(
+                                            context,
+                                            false,
+                                          ),
+                                          child: const Text(
+                                            "Cancel",
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(
+                                            context,
+                                            true,
+                                          ),
+                                          child: const Text(
+                                            "Delete",
+                                            style: TextStyle(
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    _deleteProduct(
+                                      product["id"],
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 }
