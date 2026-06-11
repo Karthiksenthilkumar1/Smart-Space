@@ -63,118 +63,134 @@ class _SavedScreenState extends State<SavedScreen> {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : savedProducts.isEmpty
-              ? const Center(child: Text("No saved products yet"))
-              : ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    const Text(
-                      "Your bookmarked recommendations",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 20),
+      body: RefreshIndicator(
+        onRefresh: _loadSavedProducts,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 250),
+                  Center(child: CircularProgressIndicator()),
+                ],
+              )
+            : savedProducts.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 250),
+                      Center(child: Text("No saved products yet")),
+                    ],
+                  )
+                : ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      const Text(
+                        "Your bookmarked recommendations",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 20),
+                      ...savedProducts.map((item) {
+                        final product = item["product"];
 
-                    ...savedProducts.map((item) {
-                      final product = item["product"];
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 12,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(18),
-                              child: product["imageUrl"] != null &&
-                                      product["imageUrl"]
-                                          .toString()
-                                          .trim()
-                                          .startsWith("http")
-                                  ? Image.network(
-                                      product["imageUrl"],
-                                      height: 72,
-                                      width: 72,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (
-                                        context,
-                                        error,
-                                        stackTrace,
-                                      ) {
-                                        return _fallbackImage();
-                                      },
-                                    )
-                                  : _fallbackImage(),
-                            ),
-                            
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product["name"] ?? "Product",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    product["dimensions"] ?? "No dimensions",
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    "₹${product["price"] ?? 0}",
-                                    style: const TextStyle(
-                                      color: Colors.indigo,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 12,
                               ),
-                            ),
-                            IconButton(
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(18),
+                                child: product["imageUrl"] != null &&
+                                        product["imageUrl"]
+                                            .toString()
+                                            .trim()
+                                            .startsWith("http")
+                                    ? Image.network(
+                                        product["imageUrl"],
+                                        height: 72,
+                                        width: 72,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          return _fallbackImage();
+                                        },
+                                      )
+                                    : _fallbackImage(),
+                              ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product["name"] ?? "Product",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      product["dimensions"] ?? "No dimensions",
+                                      style:
+                                          const TextStyle(color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "₹${product["price"] ?? 0}",
+                                      style: const TextStyle(
+                                        color: Colors.indigo,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
                                 onPressed: () async {
-                                    final response =
-                                        await ApiService.removeSavedProduct(
+                                  final response =
+                                      await ApiService.removeSavedProduct(
                                     savedProductId: item["id"],
-                                    );
+                                  );
 
-                                    if (response["statusCode"] == 200) {
+                                  if (response["statusCode"] == 200) {
                                     setState(() {
-                                        savedProducts.remove(item);
+                                      savedProducts.remove(item);
                                     });
 
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                        content: Text("Removed from saved products"),
-                                        ),
+                                      const SnackBar(
+                                        content:
+                                            Text("Removed from saved products"),
+                                      ),
                                     );
-                                    }
+                                  }
                                 },
                                 icon: const Icon(
-                                    Icons.bookmark,
-                                    color: Colors.indigo,
+                                  Icons.bookmark,
+                                  color: Colors.indigo,
                                 ),
-                                ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+      ),
     );
   }
 }

@@ -208,7 +208,9 @@ class _HistoryScreenState
           ),
         ),
       ),
-      body: Column(
+      body: RefreshIndicator(
+        onRefresh: _loadScans,
+        child: Column(
         children: [
           TabBar(
             controller: _tabController,
@@ -233,6 +235,8 @@ class _HistoryScreenState
                             ),
                           )
                         : ListView.builder(
+                            physics:
+                                const AlwaysScrollableScrollPhysics(),
                             padding: const EdgeInsets.all(16),
                             itemCount: scans.length,
                             itemBuilder: (context, index) {
@@ -416,11 +420,15 @@ class _HistoryScreenState
                             },
                           ),
 
-                const VideoHistoryScreen(),
+                RefreshIndicator(
+                  onRefresh: _loadScans,
+                  child: const VideoHistoryScreen(),
+                ),
               ],
             ),
           ),
         ],
+        ),
       ),
     );
   }

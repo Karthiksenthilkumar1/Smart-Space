@@ -279,8 +279,8 @@ class _SettingsScreenState
             ),
 
             const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
+              Icons.info_outline,
+              size: 18,
               color: Colors.grey,
             ),
           ],

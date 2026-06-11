@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../scan/scan_screen.dart';
 import '../scan/history_screen.dart';
 import '../profile/profile_screen.dart';
@@ -10,9 +12,7 @@ import '../scan/saved_screen.dart';
 import '../user/user_notifications_screen.dart';
 import '../video/video_capture_screen.dart';
 import '../../core/services/api_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/login_screen.dart';
-
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,57 +22,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRecentScans();
-  }
-
-  Future<void> _loadRecentScans() async {
-
-    final profileResponse =
-        await ApiService.getProfile();
-
-    if (profileResponse["statusCode"] == 200) {
-      userName =
-          profileResponse["data"]["user"]["name"];
-    }
-
-    final unreadResponse =
-      await ApiService.getUnreadCount();
-
-    print(
-      "REFRESHED COUNT = ${unreadResponse["data"]["count"]}"
-    );
-
-
-    final response =
-        await ApiService.getMyScans();
-
-    if (response["statusCode"] == 200) {
-      setState(() {
-
-        recentScans =
-            response["data"]["scans"];
-
-        if (unreadResponse["statusCode"] == 200) {
-          unreadCount =
-              unreadResponse["data"]["count"];
-          
-          print("COUNT FROM API = ${unreadResponse["data"]["count"]}");
-        }
-
-        isLoading = false;
-      });
-    }
-
-    else {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
   int currentIndex = 0;
 
   bool isLoading = true;
@@ -81,15 +30,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int unreadCount = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _loadRecentScans();
+  }
+
+  Future<void> _loadRecentScans() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final profileResponse = await ApiService.getProfile();
+
+    if (profileResponse["statusCode"] == 200) {
+      userName = profileResponse["data"]["user"]["name"];
+    }
+
+    final unreadResponse = await ApiService.getUnreadCount();
+
+    final response = await ApiService.getMyScans();
+
+    if (response["statusCode"] == 200) {
+      recentScans = response["data"]["scans"];
+
+      if (unreadResponse["statusCode"] == 200) {
+        unreadCount = unreadResponse["data"]["count"];
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove("remembered_email");
+
+    ApiService.authToken = null;
+
+    if (!context.mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
+      (route) => false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
-      // BODY
       body: Stack(
         children: [
-
-          // BACKGROUND GRADIENT BLOBS
           Positioned(
             top: -120,
             right: -80,
@@ -102,7 +101,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-
           Positioned(
             bottom: -100,
             left: -70,
@@ -115,244 +113,206 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-
-   
-      
-      
-      
-      SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              // TOP HEADER
-              Row(
+          SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _loadRecentScans,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Hello, $userName 👋",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          "What would you like to do today?",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        AppRoutes.fadeSlide(
-                          const UserNotificationsScreen(),
-                        ),
-                      );
-
-                      _loadRecentScans();
-                    },
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(
-                          Icons.notifications_none,
-                          size: 28,
-                        ),
-
-                        if (unreadCount > 0)
-                          Positioned(
-                            right: -6,
-                            top: -4,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Hello, $userName 👋",
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
                               ),
-                              child: Text(
-                                unreadCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
+                            ),
+                            const SizedBox(height: 5),
+                            const Text(
+                              "What would you like to do today?",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            AppRoutes.fadeSlide(
+                              const UserNotificationsScreen(),
+                            ),
+                          );
+
+                          _loadRecentScans();
+                        },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Icon(
+                              Icons.notifications_none,
+                              size: 28,
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                right: -6,
+                                top: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    unreadCount > 99
+                                        ? "99+"
+                                        : unreadCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      if (value == "logout") {
-                        final prefs =
-                            await SharedPreferences.getInstance();
-
-                        await prefs.remove("remembered_email");
-
-                        ApiService.authToken = null;
-
-                        if (!context.mounted) return;
-
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: "logout",
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.logout,
-                              color: Colors.red,
-                            ),
-                            SizedBox(width: 10),
-                            Text("Logout"),
                           ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      PopupMenuButton<String>(
+                        onSelected: (value) async {
+                          if (value == "logout") {
+                            await _logout();
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: "logout",
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.logout,
+                                  color: Colors.red,
+                                ),
+                                SizedBox(width: 10),
+                                Text("Logout"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AnimatedCardWrapper(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              AppRoutes.fadeSlide(
+                                const ScanScreen(),
+                              ),
+                            );
+                          },
+                          child: _actionCard(
+                            icon: Icons.camera_alt_outlined,
+                            title: "Scan Space",
+                            subtitle: "Use Camera",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: AnimatedCardWrapper(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              AppRoutes.fadeSlide(
+                                const VideoCaptureScreen(),
+                              ),
+                            );
+                          },
+                          child: _actionCard(
+                            icon: Icons.videocam_outlined,
+                            title: "Room Video",
+                            subtitle: "360° Capture",
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 30),
-
-              // ACTION CARDS
-              Row(
-                children: [
-                  Expanded(
-                    child: AnimatedCardWrapper(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          AppRoutes.fadeSlide(
-                            const ScanScreen(),
-                          ),
-                        );
-                      },
-                      child: _actionCard(
-                        icon: Icons.camera_alt_outlined,
-                        title: "Scan Space",
-                        subtitle: "Use Camera",
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 15),
-
-                  Expanded(
-                    child: AnimatedCardWrapper(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          AppRoutes.fadeSlide(
-                            const VideoCaptureScreen(),
-                          ),
-                        );
-                      },
-                      child: _actionCard(
-                        icon: Icons.videocam_outlined,
-                        title: "Room Video",
-                        subtitle: "360° Capture",
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 35),
-              
-              // RECENT HEADER
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Recent Measurements",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        AppRoutes.fadeSlide(
-                          const HistoryScreen(),
+                  const SizedBox(height: 35),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Recent Measurements",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
-                    child: const Text(
-                      "View All",
-                      style: TextStyle(
-                        color: Colors.indigo,
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              Expanded(
-                child: isLoading
-                    ? const Center(
-                        child:
-                            CircularProgressIndicator(),
-                      )
-                    : ListView.builder(
-                        itemCount:
-                            recentScans.length > 3
-                                ? 3
-                                : recentScans.length,
-                        itemBuilder:
-                            (context, index) {
-                          final scan =
-                              recentScans[index];
-
-                          return _measurementTile(
-                            scan["roomType"] ??
-                                "Saved Measurement",
-                            scan["createdAt"]
-                                .toString()
-                                .substring(0, 10),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            AppRoutes.fadeSlide(
+                              const HistoryScreen(),
+                            ),
                           );
                         },
+                        child: const Text(
+                          "View All",
+                          style: TextStyle(
+                            color: Colors.indigo,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (isLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 80),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (recentScans.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 60),
+                      child: Center(
+                        child: Text(
+                          "No recent measurements found",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    )
+                  else
+                    ...recentScans.take(3).map((scan) {
+                      return _measurementTile(
+                        scan["roomType"] ?? "Saved Measurement",
+                        scan["createdAt"].toString().substring(0, 10),
+                      );
+                    }).toList(),
+                  const SizedBox(height: 100),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
         ],
       ),
-
-      // FLOATING CAMERA BUTTON
       floatingActionButton: Container(
         height: 70,
         width: 70,
@@ -389,11 +349,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
-
-      // BOTTOM NAVIGATION
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
@@ -411,7 +367,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   setState(() => currentIndex = 0);
                 },
               ),
-
               BottomNavItem(
                 icon: Icons.history,
                 label: "History",
@@ -431,9 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }
                 },
               ),
-
               const SizedBox(width: 40),
-
               BottomNavItem(
                 icon: Icons.bookmark_border,
                 label: "Saved",
@@ -479,7 +432,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ACTION CARD
   Widget _actionCard({
     required IconData icon,
     required String title,
@@ -501,7 +453,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: Colors.indigo, size: 40),
+            Icon(
+              icon,
+              color: Colors.indigo,
+              size: 40,
+            ),
             const SizedBox(height: 15),
             Text(
               title,
@@ -520,8 +476,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-  // MEASUREMENT TILE
-  Widget _measurementTile(String title, String subtitle) {
+
+  Widget _measurementTile(
+    String title,
+    String subtitle,
+  ) {
     return AnimatedCardWrapper(
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
@@ -567,7 +526,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 5),
                   Text(
                     subtitle,
-                    style: const TextStyle(color: Colors.grey),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               ),
