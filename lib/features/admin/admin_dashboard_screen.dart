@@ -11,6 +11,8 @@ import 'admin_settings_screen.dart';
 import 'scan_logs_screen.dart';
 import '../../core/widgets/stat_card.dart';
 import '../../core/widgets/admin_menu_tile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../auth/login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -71,6 +73,42 @@ Widget build(BuildContext context) {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.black,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == "logout") {
+                final prefs =
+                    await SharedPreferences.getInstance();
+
+                await prefs.remove("remembered_email");
+
+                ApiService.authToken = null;
+
+                if (!context.mounted) return;
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LoginScreen(),
+                  ),
+                  (route) => false,
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: "logout",
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red),
+                    SizedBox(width: 10),
+                    Text("Logout"),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

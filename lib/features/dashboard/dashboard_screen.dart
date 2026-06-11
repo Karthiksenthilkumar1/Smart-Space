@@ -10,6 +10,8 @@ import '../scan/saved_screen.dart';
 import '../user/user_notifications_screen.dart';
 import '../video/video_capture_screen.dart';
 import '../../core/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../auth/login_screen.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -127,32 +129,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // TOP HEADER
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Hello, $userName 👋",
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Hello, $userName 👋",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        "What would you like to do today?",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 15,
+                        SizedBox(height: 5),
+                        Text(
+                          "What would you like to do today?",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   GestureDetector(
                     onTap: () async {
-
                       await Navigator.push(
                         context,
                         AppRoutes.fadeSlide(
@@ -180,25 +182,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 color: Colors.red,
                                 shape: BoxShape.circle,
                               ),
-                              constraints: const BoxConstraints(
-                                minWidth: 18,
-                                minHeight: 18,
-                              ),
                               child: Text(
-                                unreadCount > 99
-                                    ? "99+"
-                                    : unreadCount.toString(),
-                                textAlign: TextAlign.center,
+                                unreadCount.toString(),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
                       ],
                     ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  PopupMenuButton<String>(
+                    onSelected: (value) async {
+                      if (value == "logout") {
+                        final prefs =
+                            await SharedPreferences.getInstance();
+
+                        await prefs.remove("remembered_email");
+
+                        ApiService.authToken = null;
+
+                        if (!context.mounted) return;
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: "logout",
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: Colors.red,
+                            ),
+                            SizedBox(width: 10),
+                            Text("Logout"),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -382,15 +416,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.history,
                 label: "History",
                 active: currentIndex == 1,
-                onTap: () {
+                onTap: () async {
                   setState(() => currentIndex = 1);
 
-                  Navigator.push(
+                  await Navigator.push(
                     context,
                     AppRoutes.fadeSlide(
                       const HistoryScreen(),
                     ),
                   );
+
+                  if (mounted) {
+                    setState(() => currentIndex = 0);
+                  }
                 },
               ),
 
@@ -400,30 +438,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.bookmark_border,
                 label: "Saved",
                 active: currentIndex == 2,
-                onTap: () {
+                onTap: () async {
                   setState(() => currentIndex = 2);
 
-                  Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SavedScreen(),
                     ),
                   );
+
+                  if (mounted) {
+                    setState(() => currentIndex = 0);
+                  }
                 },
               ),
               BottomNavItem(
                 icon: Icons.person_outline,
                 label: "Profile",
                 active: currentIndex == 3,
-                onTap: () {
+                onTap: () async {
                   setState(() => currentIndex = 3);
 
-                  Navigator.push(
+                  await Navigator.push(
                     context,
                     AppRoutes.fadeSlide(
                       const ProfileScreen(),
                     ),
                   );
+
+                  if (mounted) {
+                    setState(() => currentIndex = 0);
+                  }
                 },
               ),
             ],
