@@ -7,6 +7,7 @@ import 'settings_screen.dart';
 import 'help_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/login_screen.dart';
+import '../scan/available_products_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -151,6 +152,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const HistoryScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _profileTile(
+                    Icons.inventory_2_outlined,
+                    "Available Products",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AvailableProductsScreen(),
                         ),
                       );
                     },
