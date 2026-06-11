@@ -14,11 +14,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final dimensionsController = TextEditingController();
-  final categoryController = TextEditingController();
   final priceController = TextEditingController();
   final imageUrlController = TextEditingController();
   String? selectedImagePath;
   bool isSaving = false;
+  List categories = [];
+  String? selectedCategory;
+  bool isCategoryLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final response = await ApiService.getCategories();
+
+    if (response["statusCode"] == 200) {
+      setState(() {
+        categories = response["data"]["categories"];
+        isCategoryLoading = false;
+      });
+    } else {
+      setState(() {
+        isCategoryLoading = false;
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -35,13 +58,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Future<void> _saveProduct() async {
+    if (selectedCategory == null || selectedCategory!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select a category"),
+        ),
+      );
+      return;
+    }
     setState(() => isSaving = true);
 
     final response = await ApiService.createProduct(
       name: nameController.text.trim(),
       description: descriptionController.text.trim(),
       dimensions: dimensionsController.text.trim(),
-      category: categoryController.text.trim(),
+      category: selectedCategory ?? "",
       price: double.tryParse(priceController.text.trim()) ?? 0,
       imageUrl: imageUrlController.text.trim(),
       imagePath: selectedImagePath,
@@ -81,6 +112,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    dimensionsController.dispose();
+    priceController.dispose();
+    imageUrlController.dispose();
+    super.dispose();
   }
 
   @override
@@ -130,12 +171,35 @@ class _AddProductScreenState extends State<AddProductScreen> {
           _field("Product Name", nameController),
           _field("Description", descriptionController),
           _field("Dimensions e.g. 110 x 55 x 75 cm", dimensionsController),
-          _field("Category e.g. furniture", categoryController),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: DropdownButtonFormField<String>(
+              value: selectedCategory,
+              decoration: InputDecoration(
+                labelText: "Category",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              items: categories.map<DropdownMenuItem<String>>((category) {
+                return DropdownMenuItem<String>(
+                  value: category["name"],
+                  child: Text(category["name"]),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedCategory = value;
+                });
+              },
+            ),
+          ),
           _field("Price", priceController),
           _field("Image URL", imageUrlController),
-
           const SizedBox(height: 10),
-
           SizedBox(
             height: 52,
             child: ElevatedButton(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_space/core/services/api_service.dart';
+import 'product_catalog_screen.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final Map category;
@@ -230,6 +231,32 @@ class _CategoryDetailScreenState
                               ),
                             ],
                           ),
+                        ),
+                        PopupMenuButton<String>(
+                          onSelected: (value) async {
+                            if (value == "manage") {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ProductCatalogScreen(),
+                                ),
+                              );
+
+                              _loadProducts();
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: "manage",
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, color: Colors.indigo),
+                                  SizedBox(width: 10),
+                                  Text("Edit/Delete"),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

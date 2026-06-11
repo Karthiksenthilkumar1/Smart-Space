@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_space/core/services/api_service.dart';
 import 'category_detail_screen.dart';
+import 'product_catalog_screen.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -196,6 +197,24 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               ),
                             ],
                           ),
+                        ),
+
+                        IconButton(
+                          tooltip: "Add Product",
+                          icon: const Icon(
+                            Icons.add_box_outlined,
+                            color: Colors.indigo,
+                          ),
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ProductCatalogScreen(),
+                              ),
+                            );
+
+                            _loadCategories();
+                          },
                         ),
 
                         IconButton(
