@@ -21,17 +21,14 @@ class FramePreviewScreen extends StatefulWidget {
   });
 
   @override
-  State<FramePreviewScreen> createState() =>
-      _FramePreviewScreenState();
+  State<FramePreviewScreen> createState() => _FramePreviewScreenState();
 }
 
-class _FramePreviewScreenState
-    extends State<FramePreviewScreen> {
+class _FramePreviewScreenState extends State<FramePreviewScreen> {
   Offset? point1;
   Offset? point2;
 
-  final TextEditingController sizeController =
-      TextEditingController();
+  final TextEditingController sizeController = TextEditingController();
 
   final TextEditingController measurementNameController =
       TextEditingController();
@@ -69,18 +66,15 @@ class _FramePreviewScreenState
     super.initState();
 
     if (widget.savedMeasurements != null) {
-      measurements =
-        List<Map<String, dynamic>>.from(
+      measurements = List<Map<String, dynamic>>.from(
         widget.savedMeasurements!,
       );
     }
     loadAIDetection();
-   }
+  }
 
-   Future<void> loadAIDetection() async {
-
-    final aiResponse =
-        await ApiService.detectSpaceWithAI(
+  Future<void> loadAIDetection() async {
+    final aiResponse = await ApiService.detectSpaceWithAI(
       imagePath: widget.imagePath,
     );
 
@@ -90,19 +84,15 @@ class _FramePreviewScreenState
       return;
     }
 
-    final aiData =
-        aiResponse["data"]["ai"];
+    final aiData = aiResponse["data"]["ai"];
 
-    final detectedSpace =
-        aiData["detectedSpace"];
+    final detectedSpace = aiData["detectedSpace"];
 
-    final imageSize =
-        aiData["imageSize"];
+    final imageSize = aiData["imageSize"];
 
     print("RAW IMAGE SIZE = $imageSize");
 
     setState(() {
-
       final detectedX = detectedSpace["x"].toDouble();
       final detectedY = detectedSpace["y"].toDouble();
       final detectedWidth = detectedSpace["width"].toDouble();
@@ -111,8 +101,7 @@ class _FramePreviewScreenState
       final actualImageWidth = imageSize["width"].toDouble();
       final actualImageHeight = imageSize["height"].toDouble();
 
-      final isFullImageDetection =
-          detectedX == 0 &&
+      final isFullImageDetection = detectedX == 0 &&
           detectedY == 0 &&
           detectedWidth == actualImageWidth &&
           detectedHeight == actualImageHeight;
@@ -136,11 +125,9 @@ class _FramePreviewScreenState
         "IMAGE SIZE -> W:$imageWidth H:$imageHeight",
       );
 
-      imageWidth =
-          imageSize["width"].toDouble();
+      imageWidth = imageSize["width"].toDouble();
 
-      imageHeight =
-          imageSize["height"].toDouble();
+      imageHeight = imageSize["height"].toDouble();
 
       print(
         "UPDATED IMAGE SIZE -> W:$imageWidth H:$imageHeight",
@@ -160,20 +147,15 @@ class _FramePreviewScreenState
   }
 
   double calculateMeasuredCm() {
-    if (measurePoint1 == null ||
-        measurePoint2 == null ||
-        pixelsPerCm == 0) {
+    if (measurePoint1 == null || measurePoint2 == null || pixelsPerCm == 0) {
       return 0;
     }
 
-    final dx =
-        measurePoint2!.dx - measurePoint1!.dx;
+    final dx = measurePoint2!.dx - measurePoint1!.dx;
 
-    final dy =
-        measurePoint2!.dy - measurePoint1!.dy;
+    final dy = measurePoint2!.dy - measurePoint1!.dy;
 
-    final pixelDistance =
-        sqrt(dx * dx + dy * dy);
+    final pixelDistance = sqrt(dx * dx + dy * dy);
 
     return pixelDistance / pixelsPerCm;
   }
@@ -219,23 +201,15 @@ class _FramePreviewScreenState
   }
 
   void completeObject() {
-    if (objectWidth == null &&
-        objectHeight == null &&
-        objectDepth == null) {
+    if (objectWidth == null && objectHeight == null && objectDepth == null) {
       return;
     }
 
-    double width =
-        objectWidth ??
-        ((objectHeight ?? objectDepth!) / 1.5);
+    double width = objectWidth ?? ((objectHeight ?? objectDepth!) / 1.5);
 
-    double height =
-        objectHeight ??
-        (width * 1.5);
+    double height = objectHeight ?? (width * 1.5);
 
-    double depth =
-        objectDepth ??
-        (width * 0.6);
+    double depth = objectDepth ?? (width * 0.6);
 
     measurements.add({
       "name": "Measured Object",
@@ -263,9 +237,7 @@ class _FramePreviewScreenState
   }
 
   Map<String, double>? calculateObject3D() {
-    if (objectWidth == null &&
-        objectHeight == null &&
-        objectDepth == null) {
+    if (objectWidth == null && objectHeight == null && objectDepth == null) {
       return null;
     }
 
@@ -296,9 +268,8 @@ class _FramePreviewScreenState
   }
 
   Future<void> saveVideoData() async {
-    final objectCount = measurements
-        .where((m) => m["measurementType"] == "OBJECT_3D")
-        .length;
+    final objectCount =
+        measurements.where((m) => m["measurementType"] == "OBJECT_3D").length;
 
     if (objectCount == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -341,114 +312,150 @@ class _FramePreviewScreenState
         children: [
           GestureDetector(
             behavior: HitTestBehavior.translucent,
-        onTapDown: (details) {
+            onTapDown: (details) {
+              final RenderBox? imageBox =
+                  imageKey.currentContext?.findRenderObject() as RenderBox?;
 
-          final RenderBox? imageBox =
-            imageKey.currentContext?.findRenderObject()
-                as RenderBox?;
+              if (imageBox == null) return;
 
-        if (imageBox == null) return;
+              final imagePosition = imageBox.localToGlobal(Offset.zero);
 
-        final imagePosition =
-            imageBox.localToGlobal(Offset.zero);
+              final imageSize = imageBox.size;
 
-        final imageSize = imageBox.size;
+              print(
+                "DISPLAYED IMAGE SIZE -> "
+                "${imageSize.width} x ${imageSize.height}",
+              );
 
-        print(
-          "DISPLAYED IMAGE SIZE -> "
-          "${imageSize.width} x ${imageSize.height}",
-        );
+              final tapPosition = details.globalPosition;
 
-        final tapPosition = details.globalPosition;
-
-        if (tapPosition.dx < imagePosition.dx ||
-            tapPosition.dx >
-                imagePosition.dx + imageSize.width ||
-            tapPosition.dy < imagePosition.dy ||
-            tapPosition.dy >
-                imagePosition.dy + imageSize.height) {
-        return;
-        }  
-          setState(() {
-            if (!measurementMode) {
-              if (point1 == null) {
-                point1 = details.localPosition;
-              } else if (point2 == null) {
-                point2 = details.localPosition;
-              } else {
-                point1 = details.localPosition;
-                point2 = null;
+              if (tapPosition.dx < imagePosition.dx ||
+                  tapPosition.dx > imagePosition.dx + imageSize.width ||
+                  tapPosition.dy < imagePosition.dy ||
+                  tapPosition.dy > imagePosition.dy + imageSize.height) {
+                return;
               }
-            } else {
-              if (measurePoint1 == null) {
-                measurePoint1 = details.localPosition;
-              } else if (measurePoint2 == null) {
-                measurePoint2 = details.localPosition;
-              } else {
-                measurePoint1 = details.localPosition;
-                measurePoint2 = null;
-              }
-            }
-          });
-        },
-        child: 
-            Padding(
-            padding: EdgeInsets.zero,
-            child: Align(
+              setState(() {
+                if (!measurementMode) {
+                  if (point1 == null) {
+                    point1 = details.localPosition;
+                  } else if (point2 == null) {
+                    point2 = details.localPosition;
+                  } else {
+                    point1 = details.localPosition;
+                    point2 = null;
+                  }
+                } else {
+                  if (measurePoint1 == null) {
+                    measurePoint1 = details.localPosition;
+                  } else if (measurePoint2 == null) {
+                    measurePoint2 = details.localPosition;
+                  } else {
+                    measurePoint1 = details.localPosition;
+                    measurePoint2 = null;
+                  }
+                }
+              });
+            },
+            child: Padding(
+              padding: EdgeInsets.zero,
+              child: Align(
                 alignment: Alignment.topCenter,
                 child: Container(
-                key: imageKey,
-                child: InteractiveViewer(
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.61,
-                    child: Image.file(
-                      File(widget.imagePath),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                ),
-            ),
-            ),
-          ),
-                                
-          if (showMethodSelection && aiWidth > 0 && aiHeight > 0)
-            Positioned(
-              left: aiX * 280 / imageWidth,
-              top: aiY * 500 / imageHeight,
-              child: IgnorePointer(
-                child: Container(
-                  width: aiWidth * 280 / imageWidth,
-                  height: aiHeight * 500 / imageHeight,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.red,
-                      width: 4,
+                  key: imageKey,
+                  child: InteractiveViewer(
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.61,
+                      child: Image.file(
+                        File(widget.imagePath),
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-            IgnorePointer( child: CustomPaint(
+          ),
+
+          if (showMethodSelection && aiWidth > 0 && aiHeight > 0)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.61,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final containerWidth = constraints.maxWidth;
+                    final containerHeight = constraints.maxHeight;
+
+                    final imageAspect = imageWidth / imageHeight;
+                    final containerAspect = containerWidth / containerHeight;
+
+                    double displayWidth;
+                    double displayHeight;
+                    double offsetX = 0;
+                    double offsetY = 0;
+
+                    if (containerAspect > imageAspect) {
+                      displayHeight = containerHeight;
+                      displayWidth = displayHeight * imageAspect;
+                      offsetX = (containerWidth - displayWidth) / 2;
+                    } else {
+                      displayWidth = containerWidth;
+                      displayHeight = displayWidth / imageAspect;
+                      offsetY = (containerHeight - displayHeight) / 2;
+                    }
+
+                    final scaleX = displayWidth / imageWidth;
+                    final scaleY = displayHeight / imageHeight;
+
+                    return Stack(
+                      children: [
+                        Positioned(
+                          left: offsetX + aiX * scaleX,
+                          top: offsetY + aiY * scaleY,
+                          child: IgnorePointer(
+                            child: Container(
+                              width: aiWidth * scaleX,
+                              height: aiHeight * scaleY,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.red,
+                                  width: 4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          IgnorePointer(
+            child: CustomPaint(
               size: Size.infinite,
               painter: MeasurementPainter(
                 currentFrameMeasurements,
               ),
             ),
-            ),
+          ),
 
-            IgnorePointer(child: CustomPaint(
-                size: Size.infinite,
-                painter: ActiveMeasurementPainter(
-                    point1,
-                    point2,
-                    measurePoint1,
-                    measurePoint2,
-                ),
+          IgnorePointer(
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: ActiveMeasurementPainter(
+                point1,
+                point2,
+                measurePoint1,
+                measurePoint2,
+              ),
             ),
-            ),
+          ),
 
-            if (showMethodSelection)
+          if (showMethodSelection)
             Positioned(
               bottom: 40,
               left: 20,
@@ -468,7 +475,6 @@ class _FramePreviewScreenState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-
                     const Text(
                       "Choose Measurement Method",
                       style: TextStyle(
@@ -476,9 +482,7 @@ class _FramePreviewScreenState
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -491,24 +495,21 @@ class _FramePreviewScreenState
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  VideoMeasurementResultScreen(
-                                    imagePath: widget.imagePath,
-                                    videoPath: widget.videoPath,
-                                    frameTimeMs: widget.frameTimeMs,
-                                    aiX: aiX,
-                                    aiY: aiY,
-                                    aiWidth: aiWidth,
-                                    aiHeight: aiHeight,
-                                  ),
+                              builder: (_) => VideoMeasurementResultScreen(
+                                imagePath: widget.imagePath,
+                                videoPath: widget.videoPath,
+                                frameTimeMs: widget.frameTimeMs,
+                                aiX: aiX,
+                                aiY: aiY,
+                                aiWidth: aiWidth,
+                                aiHeight: aiHeight,
+                              ),
                             ),
                           );
                         },
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -529,244 +530,219 @@ class _FramePreviewScreenState
               ),
             ),
 
-            // Calibration Point 1
-            if (point1 != null)
-              Positioned(
-                left: point1!.dx - 10,
-                top: point1!.dy - 10,
-                child: const Icon(
-                  Icons.circle,
-                  color: Colors.red,
-                  size: 20,
-                ),
+          // Calibration Point 1
+          if (point1 != null)
+            Positioned(
+              left: point1!.dx - 10,
+              top: point1!.dy - 10,
+              child: const Icon(
+                Icons.circle,
+                color: Colors.red,
+                size: 20,
               ),
+            ),
 
-            // Calibration Point 2
-            if (point2 != null)
-              Positioned(
-                left: point2!.dx - 10,
-                top: point2!.dy - 10,
-                child: const Icon(
-                  Icons.circle,
-                  color: Colors.blue,
-                  size: 20,
-                ),
+          // Calibration Point 2
+          if (point2 != null)
+            Positioned(
+              left: point2!.dx - 10,
+              top: point2!.dy - 10,
+              child: const Icon(
+                Icons.circle,
+                color: Colors.blue,
+                size: 20,
               ),
+            ),
 
-            // Measurement Point 1
-            if (measurePoint1 != null)
-              Positioned(
-                left: measurePoint1!.dx - 14,
-                top: measurePoint1!.dy - 14,
-                child: const Icon(
-                  Icons.location_on,
-                  color: Colors.yellow,
-                  size: 30,
-                ),
+          // Measurement Point 1
+          if (measurePoint1 != null)
+            Positioned(
+              left: measurePoint1!.dx - 14,
+              top: measurePoint1!.dy - 14,
+              child: const Icon(
+                Icons.location_on,
+                color: Colors.yellow,
+                size: 30,
               ),
+            ),
 
-            // Measurement Point 2
-            if (measurePoint2 != null)
-              Positioned(
-                left: measurePoint2!.dx - 14,
-                top: measurePoint2!.dy - 14,
-                child: const Icon(
-                  Icons.location_on,
-                  color: Colors.green,
-                  size: 30,
-                ),
+          // Measurement Point 2
+          if (measurePoint2 != null)
+            Positioned(
+              left: measurePoint2!.dx - 14,
+              top: measurePoint2!.dy - 14,
+              child: const Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
               ),
+            ),
 
-            // Saved Measurement Point 1
+          // Saved Measurement Point 1
           ...currentFrameMeasurements.map(
             (m) => Positioned(
-                left: m["point1x"] - 12,
-                top: m["point1y"] - 12,
-                child: const Icon(
+              left: m["point1x"] - 12,
+              top: m["point1y"] - 12,
+              child: const Icon(
                 Icons.location_on,
                 color: Colors.purple,
                 size: 26,
-                ),
+              ),
             ),
-            ),
+          ),
 
-            // Saved Measurement Point 2
+          // Saved Measurement Point 2
           ...currentFrameMeasurements.map(
             (m) => Positioned(
-                left: m["point2x"] - 12,
-                top: m["point2y"] - 12,
-                child: const Icon(
+              left: m["point2x"] - 12,
+              top: m["point2y"] - 12,
+              child: const Icon(
                 Icons.location_on,
                 color: Colors.cyan,
                 size: 26,
-                ),
+              ),
             ),
-            ),
+          ),
 
-            // Measured Distance Display
-            if (measurePoint1 != null &&
-            measurePoint2 != null)
-        Positioned(
-            left: (measurePoint1!.dx + measurePoint2!.dx) / 2 - 35,
-            top: (measurePoint1!.dy + measurePoint2!.dy) / 2 - 50,
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  color: Colors.black87,
-                  child: Text(
-                    "${calculateMeasuredCm().toStringAsFixed(2)} cm",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+          // Measured Distance Display
+          if (measurePoint1 != null && measurePoint2 != null)
+            Positioned(
+              left: (measurePoint1!.dx + measurePoint2!.dx) / 2 - 35,
+              top: (measurePoint1!.dy + measurePoint2!.dy) / 2 - 50,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                color: Colors.black87,
+                child: Text(
+                  "${calculateMeasuredCm().toStringAsFixed(2)} cm",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+            ),
 
-            
-
-            if (!showMethodSelection &&
-                point1 != null &&
-                point2 != null)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
+          if (!showMethodSelection && point1 != null && point2 != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
                 constraints: BoxConstraints(
-                  maxHeight:
-                      MediaQuery.of(context).size.height * 0.30,
+                  maxHeight: MediaQuery.of(context).size.height * 0.30,
                 ),
                 padding: const EdgeInsets.fromLTRB(
-                    20,
-                    20,
-                    20,
-                    30,
+                  20,
+                  20,
+                  20,
+                  30,
                 ),
                 decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
-                    ),
-                    boxShadow: [
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                  boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
-                        blurRadius: 20,
-                        offset: const Offset(0, -4),
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 20,
+                      offset: const Offset(0, -4),
                     ),
-                    ],
+                  ],
                 ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if(!isCalibrated) ...[
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isCalibrated) ...[
                         const Text(
-                            "Reference Calibration",
-                            style: TextStyle(
+                          "Reference Calibration",
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.indigo,
-                            ),
+                          ),
                         ),
-
                         const SizedBox(height: 8),
-
                         Text(
-                            "Pixels: ${calculateDistance().toStringAsFixed(2)}",
-                        style: const TextStyle(
+                          "Pixels: ${calculateDistance().toStringAsFixed(2)}",
+                          style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      TextField(
-                        controller: sizeController,
-                        keyboardType:
-                            TextInputType.number,
-                        style: const TextStyle(
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: sizeController,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(
                             color: Colors.black87,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: "Enter actual size in cm",
+                            hintStyle: TextStyle(
+                              color: Colors.grey,
+                            ),
+                            border: OutlineInputBorder(),
+                          ),
                         ),
-                        decoration:
-                            const InputDecoration(
-                          hintText:
-                              "Enter actual size in cm",
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                        ),
-                          border:
-                              OutlineInputBorder(),
-                        ),
-                      ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              final actualCm =
+                                  double.tryParse(sizeController.text);
 
-                      const SizedBox(height: 10),
+                              if (actualCm == null || actualCm <= 0) {
+                                return;
+                              }
 
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton.icon(
+                              setState(() {
+                                pixelsPerCm = calculateDistance() / actualCm;
+
+                                isCalibrated = true;
+                                measurementMode = true;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            icon: const Icon(Icons.check_circle),
+                            label: const Text(
+                              "CALIBRATE",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
                           onPressed: () {
-                            final actualCm =
-                                double.tryParse(
-                                    sizeController.text);
-
-                            if (actualCm == null ||
-                                actualCm <= 0) {
-                              return;
-                            }
-
                             setState(() {
-                              pixelsPerCm =
-                                  calculateDistance() /
-                                      actualCm;
-
-                              isCalibrated = true;
-                              measurementMode = true;
+                              point1 = null;
+                              point2 = null;
+                              pixelsPerCm = 0;
                             });
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          icon: const Icon(Icons.check_circle),
+                          icon: const Icon(Icons.refresh),
                           label: const Text(
-                            "CALIBRATE",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            "RESET CALIBRATION",
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-
-                    OutlinedButton.icon(
-                    onPressed: () {
-                        setState(() {
-                        point1 = null;
-                        point2 = null;
-                        pixelsPerCm = 0;
-                        });
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text(
-                        "RESET CALIBRATION",
-                    ),
-                    
-                ),
-                ],
-
+                      ],
                       const SizedBox(height: 10),
-
-
                       if (isCalibrated)
                         Column(
-                            children: [
+                          children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -795,9 +771,7 @@ class _FramePreviewScreenState
                                 ],
                               ),
                             ),
-
                             const SizedBox(height: 10),
-
                             DropdownButtonFormField<String>(
                               value: selectedDimension,
                               decoration: const InputDecoration(
@@ -805,9 +779,12 @@ class _FramePreviewScreenState
                                 border: OutlineInputBorder(),
                               ),
                               items: const [
-                                DropdownMenuItem(value: "Width", child: Text("Width")),
-                                DropdownMenuItem(value: "Height", child: Text("Height")),
-                                DropdownMenuItem(value: "Depth", child: Text("Depth")),
+                                DropdownMenuItem(
+                                    value: "Width", child: Text("Width")),
+                                DropdownMenuItem(
+                                    value: "Height", child: Text("Height")),
+                                DropdownMenuItem(
+                                    value: "Depth", child: Text("Depth")),
                               ],
                               onChanged: (value) {
                                 setState(() {
@@ -815,30 +792,27 @@ class _FramePreviewScreenState
                                 });
                               },
                             ),
-
                             const SizedBox(height: 10),
-
                             OutlinedButton.icon(
-                            onPressed: () {
+                              onPressed: () {
                                 setState(() {
-                                measurePoint1 = null;
-                                measurePoint2 = null;
+                                  measurePoint1 = null;
+                                  measurePoint2 = null;
                                 });
-                            },
-                            icon: const Icon(Icons.refresh),
-                            label: const Text(
+                              },
+                              icon: const Icon(Icons.refresh),
+                              label: const Text(
                                 "RESET MEASUREMENT",
+                              ),
                             ),
-                            ),
-                            ],
+                          ],
                         ),
-
-                        if (isCalibrated &&
-                            measurePoint1 != null &&
-                            measurePoint2 != null)
+                      if (isCalibrated &&
+                          measurePoint1 != null &&
+                          measurePoint2 != null)
                         Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: SizedBox(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: SizedBox(
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton.icon(
@@ -862,11 +836,10 @@ class _FramePreviewScreenState
                             ),
                           ),
                         ),
-
-                        if (isCalibrated &&
+                      if (isCalibrated &&
                           (objectWidth != null ||
-                          objectHeight != null ||
-                          objectDepth != null))
+                              objectHeight != null ||
+                              objectDepth != null))
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: SizedBox(
@@ -889,176 +862,168 @@ class _FramePreviewScreenState
                             ),
                           ),
                         ),
-
                       if (pixelsPerCm > 0)
                         Padding(
-                          padding:
-                              const EdgeInsets.only(
-                                  top: 10),
+                          padding: const EdgeInsets.only(top: 10),
                           child: Text(
                             "1 cm = ${pixelsPerCm.toStringAsFixed(2)} pixels",
                             style: const TextStyle(
                               color: Colors.green,
                               fontSize: 16,
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-
-                        if (readyToSave)
-
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: 52,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.pop(
-                                      context,
-                                      measurements,
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.indigo,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  icon: const Icon(Icons.video_collection),
-                                  label: const Text(
-                                    "SELECT ANOTHER FRAME",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                      if (readyToSave)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(
+                                  context,
+                                  measurements,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              icon: const Icon(Icons.video_collection),
+                              label: const Text(
+                                "SELECT ANOTHER FRAME",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            Padding(
-                                padding: const EdgeInsets.only(top: 10),
-                                child: SizedBox(
-                                width: double.infinity,
-                                height: 52,
-                                child: ElevatedButton.icon(
-                                  onPressed: saveVideoData,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.indigo,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  icon: const Icon(Icons.save),
-                                  label: const Text(
-                                    "SAVE VIDEO",
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                        if (measurements.isNotEmpty)
-                    Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                        const Icon(
-                            Icons.check_circle,
-                            color: Colors.green,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "${measurements.where((m) => m["measurementType"] == "OBJECT_3D").length} Objects Completed",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        ],
-                    ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton.icon(
+                            onPressed: saveVideoData,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            icon: const Icon(Icons.save),
+                            label: const Text(
+                              "SAVE VIDEO",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (measurements.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(top: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "${measurements.where((m) => m["measurementType"] == "OBJECT_3D").length} Objects Completed",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),
               ),
-                ),
-          ],
-        ),
+            ),
+        ],
+      ),
     );
   }
-    }
+}
 
-    class MeasurementPainter extends CustomPainter {
-    final List<Map<String, dynamic>> measurements;
+class MeasurementPainter extends CustomPainter {
+  final List<Map<String, dynamic>> measurements;
 
-    MeasurementPainter(this.measurements);
+  MeasurementPainter(this.measurements);
 
-    @override
-    void paint(Canvas canvas, Size size) {
-        final paintLine = Paint()
-        ..color = Colors.green
-        ..strokeWidth = 3;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paintLine = Paint()
+      ..color = Colors.green
+      ..strokeWidth = 3;
 
-        for (var m in measurements) {
-        final p1 = Offset(
-            m["point1x"],
-            m["point1y"],
-        );
+    for (var m in measurements) {
+      final p1 = Offset(
+        m["point1x"],
+        m["point1y"],
+      );
 
-        final p2 = Offset(
-            m["point2x"],
-            m["point2y"],
-        );
+      final p2 = Offset(
+        m["point2x"],
+        m["point2y"],
+      );
 
-        canvas.drawLine(
-            p1,
-            p2,
-            paintLine,
-        );
+      canvas.drawLine(
+        p1,
+        p2,
+        paintLine,
+      );
 
-        final midpoint = Offset(
+      final midpoint = Offset(
         (p1.dx + p2.dx) / 2,
         (p1.dy + p2.dy) / 2,
-        );
+      );
 
-        final textPainter = TextPainter(
+      final textPainter = TextPainter(
         text: TextSpan(
-            text:
-                "${m["name"]}\n${m["distance"].toStringAsFixed(1)} cm",
-            style: const TextStyle(
+          text: "${m["name"]}\n${m["distance"].toStringAsFixed(1)} cm",
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 12,
             fontWeight: FontWeight.bold,
             backgroundColor: Colors.black,
-            ),
+          ),
         ),
         textDirection: TextDirection.ltr,
-        );
+      );
 
-        textPainter.layout();
+      textPainter.layout();
 
-        textPainter.paint(
+      textPainter.paint(
         canvas,
         midpoint,
-        );
-        }
+      );
     }
+  }
 
-    @override
-    bool shouldRepaint(covariant CustomPainter oldDelegate) {
-        return true;
-    }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
 }
 
 class ActiveMeasurementPainter extends CustomPainter {
@@ -1092,8 +1057,7 @@ class ActiveMeasurementPainter extends CustomPainter {
       );
     }
 
-    if (measurePoint1 != null &&
-        measurePoint2 != null) {
+    if (measurePoint1 != null && measurePoint2 != null) {
       canvas.drawLine(
         measurePoint1!,
         measurePoint2!,
@@ -1103,8 +1067,7 @@ class ActiveMeasurementPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(
-      covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
 }
