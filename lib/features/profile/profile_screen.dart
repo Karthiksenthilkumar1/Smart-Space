@@ -5,6 +5,8 @@ import '../scan/saved_screen.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
 import 'help_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -198,9 +200,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 25),
 
                 ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
+                    final prefs =
+                        await SharedPreferences.getInstance();
+
+                    await prefs.remove("remembered_email");
+
                     ApiService.authToken = null;
-                    Navigator.popUntil(context, (route) => route.isFirst);
+
+                    if (!mounted) return;
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
                   },
                   icon: const Icon(Icons.logout),
                   label: const Text("Logout"),

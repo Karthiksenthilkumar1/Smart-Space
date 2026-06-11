@@ -383,7 +383,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _toggleTile(String text, bool active, bool value) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => isUser = value),
+        onTap: () {
+          setState(() {
+            isUser = value;
+
+            emailController.clear();
+            passwordController.clear();
+
+            obscurePassword = true;
+          });
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),

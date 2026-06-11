@@ -5,6 +5,9 @@ import 'about_platform_screen.dart';
 import 'help_support_screen.dart';
 import 'notification_preferences_screen.dart';
 import 'data_management_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_space/core/services/api_service.dart';
+import 'package:smart_space/features/auth/login_screen.dart';
 
 class AdminSettingsScreen extends StatelessWidget {
   const AdminSettingsScreen({super.key});
@@ -159,8 +162,23 @@ class AdminSettingsScreen extends StatelessWidget {
           const SizedBox(height: 30),
 
           ElevatedButton.icon(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
+            onPressed: () async {
+              final prefs =
+                  await SharedPreferences.getInstance();
+
+              await prefs.remove("remembered_email");
+
+              ApiService.authToken = null;
+
+              if (!context.mounted) return;
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LoginScreen(),
+                ),
+                (route) => false,
+              );
             },
             icon: const Icon(Icons.logout),
             label: const Text("Logout"),

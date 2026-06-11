@@ -6,7 +6,7 @@ class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
   static const String localNetworkUrl =
-      "http://172.30.4.77:8000";
+      "http://172.30.4.70:8000";
 
   static String baseUrl = localNetworkUrl;
   static String? authToken;
