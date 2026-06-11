@@ -533,7 +533,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.more_vert),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == "history") {
+                  Navigator.push(
+                    context,
+                    AppRoutes.fadeSlide(
+                      const HistoryScreen(),
+                    ),
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: "history",
+                  child: Row(
+                    children: [
+                      Icon(Icons.history),
+                      SizedBox(width: 10),
+                      Text("View History"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
