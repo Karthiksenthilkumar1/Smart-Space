@@ -37,12 +37,10 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
   void _filterLogs(String query) {
     setState(() {
       filteredLogs = scanLogs.where((log) {
-        final user = (log["userName"] ?? "").toString().toLowerCase();
         final room = (log["roomType"] ?? "").toString().toLowerCase();
         final email = (log["userEmail"] ?? "").toString().toLowerCase();
 
-        return user.contains(query.toLowerCase()) ||
-            room.contains(query.toLowerCase()) ||
+        return room.contains(query.toLowerCase()) ||
             email.contains(query.toLowerCase());
       }).toList();
     });
@@ -120,7 +118,7 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                   TextField(
                     onChanged: _filterLogs,
                     decoration: InputDecoration(
-                      hintText: "Search by user, email or room",
+                      hintText: "Search by email or room",
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
                       fillColor: Colors.white,
@@ -213,8 +211,8 @@ class _ScanLogsScreenState extends State<ScanLogsScreen> {
                                   const SizedBox(height: 8),
                                   Text(
                                     log["scanType"] == "VIDEO"
-                                        ? "${log["userName"] ?? "Unknown User"} • Video Measurement"
-                                        : "${log["userName"] ?? "Unknown User"} • ${log["roomType"] ?? "Unknown Room"}",
+                                        ? "Video Measurement"
+                                        : log["roomType"] ?? "Unknown Room",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
