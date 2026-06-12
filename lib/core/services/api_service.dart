@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String emulatorUrl = "http://10.0.2.2:8000";
 
-  static const String localNetworkUrl =
-      "http://172.30.4.88:8000";
+  static const String localNetworkUrl = "http://172.30.4.88:8000";
 
   static String baseUrl = localNetworkUrl;
   static String? authToken;
@@ -43,18 +42,15 @@ class ApiService {
   static Future<void> saveFcmToken(
     String fcmToken,
   ) async {
-    final url =
-        Uri.parse(
+    final url = Uri.parse(
       "$baseUrl/api/auth/fcm-token",
     );
 
     await http.put(
       url,
       headers: {
-        "Content-Type":
-            "application/json",
-        "Authorization":
-            "Bearer $authToken",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
       },
       body: jsonEncode({
         "fcmToken": fcmToken,
@@ -98,28 +94,27 @@ class ApiService {
     required double area,
     required String roomType,
     String? imagePath,
+    List<Map<String, dynamic>>? measurementLines,
   }) async {
     final url = Uri.parse("$baseUrl/api/scans");
 
     final request = http.MultipartRequest("POST", url);
 
-    request.headers["Authorization"] =
-        "Bearer $authToken";
+    request.headers["Authorization"] = "Bearer $authToken";
 
-    request.fields["width"] =
-        width.toString();
+    request.fields["width"] = width.toString();
 
-    request.fields["height"] =
-        height.toString();
+    request.fields["height"] = height.toString();
 
-    request.fields["depth"] =
-        depth.toString();
+    request.fields["depth"] = depth.toString();
 
-    request.fields["area"] =
-        area.toString();
+    request.fields["area"] = area.toString();
 
-    request.fields["roomType"] =
-        roomType;
+    request.fields["roomType"] = roomType;
+
+    if (measurementLines != null) {
+      request.fields["measurementLines"] = jsonEncode(measurementLines);
+    }
 
     if (imagePath != null) {
       request.files.add(
@@ -130,20 +125,16 @@ class ApiService {
       );
     }
 
-    final streamedResponse =
-        await request.send();
+    final streamedResponse = await request.send();
 
-    final response =
-        await http.Response.fromStream(
+    final response = await http.Response.fromStream(
       streamedResponse,
     );
 
-    final data =
-        jsonDecode(response.body);
+    final data = jsonDecode(response.body);
 
     return {
-      "statusCode":
-          response.statusCode,
+      "statusCode": response.statusCode,
       "data": data,
     };
   }
@@ -168,23 +159,23 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> getMyVideos() async {
-  final url = Uri.parse("$baseUrl/api/video-scans/my-videos");
+    final url = Uri.parse("$baseUrl/api/video-scans/my-videos");
 
-  final response = await http.get(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $authToken",
-    },
-  );
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
 
-  final data = jsonDecode(response.body);
+    final data = jsonDecode(response.body);
 
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
 
   static Future<Map<String, dynamic>> saveProduct({
     required String productId,
@@ -534,27 +525,27 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> getScanLogDetails(
-  String scanType,
-  String scanId,
-) async {
-  final url = Uri.parse(
-    "$baseUrl/api/admin/scan-logs/$scanType/$scanId",
-  );
+    String scanType,
+    String scanId,
+  ) async {
+    final url = Uri.parse(
+      "$baseUrl/api/admin/scan-logs/$scanType/$scanId",
+    );
 
-  final response = await http.get(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  );
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
 
-  final data = jsonDecode(response.body);
+    final data = jsonDecode(response.body);
 
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
 
   static Future<Map<String, dynamic>> getCategories() async {
     final url = Uri.parse("$baseUrl/api/admin/categories");
@@ -817,503 +808,458 @@ class ApiService {
     };
   }
 
-  static Future<Map<String, dynamic>>
-    getUserNotifications() async {
-
-  final url = Uri.parse("$baseUrl/api/notifications");
-
-  final response = await http.get(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $authToken",
-    },
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> getVendors() async {
-  final url = Uri.parse("$baseUrl/api/admin/vendors");
-
-  final response = await http.get(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> createVendor({
-  required String name,
-  required String status,
-  required String website,
-}) async {
-  final url = Uri.parse("$baseUrl/api/admin/vendors");
-
-  final response = await http.post(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode({
-      "name": name,
-      "status": status,
-      "website": website,
-    }),
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> deleteVendor({
-  required String vendorId,
-}) async {
-  final url = Uri.parse("$baseUrl/api/admin/vendors/$vendorId");
-
-  final response = await http.delete(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> updateVendor({
-  required String vendorId,
-  required String name,
-  required String status,
-  required String website,
-}) async {
-  final url = Uri.parse("$baseUrl/api/admin/vendors/$vendorId");
-
-  final response = await http.put(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode({
-      "name": name,
-      "status": status,
-      "website": website,
-    }),
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> getProductSyncs() async {
-  final url = Uri.parse("$baseUrl/api/admin/product-syncs");
-
-  final response = await http.get(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> createProductSync({
-  required String vendorId,
-}) async {
-  final url = Uri.parse("$baseUrl/api/admin/product-syncs");
-
-  final response = await http.post(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode({
-      "vendorId": vendorId,
-    }),
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> deleteProductSync({
-  required String syncId,
-}) async {
-  final url = Uri.parse("$baseUrl/api/admin/product-syncs/$syncId");
-
-  final response = await http.delete(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> detectSpaceWithAI({
-  required String imagePath,
-}) async {
-  final url = Uri.parse("$baseUrl/api/ai/detect-space");
-
-  final request = http.MultipartRequest("POST", url);
-
-  request.files.add(
-    await http.MultipartFile.fromPath(
-      "image",
-      imagePath,
-    ),
-  );
-
-  final streamedResponse = await request.send();
-
-  final response = await http.Response.fromStream(
-    streamedResponse,
-  );
-
-  final data = jsonDecode(response.body);
-  print("AI API RESPONSE = $data");
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> saveVideoScan({
-  required String videoPath,
-  required String thumbnailUrl,
-  required double pixelsPerCm,
-  required List<Map<String, dynamic>> measurements,
-}) async {
-  final url =
-      Uri.parse("$baseUrl/api/video-scans");
-
-  final request =
-      http.MultipartRequest("POST", url);
-
-  request.headers["Authorization"] =
-      "Bearer $authToken";
-
-  request.fields["pixelsPerCm"] =
-      pixelsPerCm.toString();
-
-  request.fields["measurements"] =
-      jsonEncode(measurements);
-
-  request.files.add(
-    await http.MultipartFile.fromPath(
-      "video",
-      videoPath,
-    ),
-  );
-
-request.files.add(
-  await http.MultipartFile.fromPath(
-    "thumbnail",
-    thumbnailUrl,
-  ),
-);
-
-  final streamedResponse =
-      await request.send();
-
-  final response =
-      await http.Response.fromStream(
-    streamedResponse,
-  );
-
-  final data =
-      jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> deleteVideo(
-  String id,
-) async {
-  final response = await http.delete(
-    Uri.parse("$baseUrl/api/video-scans/$id"),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $authToken",
-    },
-  );
-
-  final data = jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>>
-getAdminProfile() async {
-
-  final response = await http.get(
-    Uri.parse("$baseUrl/api/admin/profile"),
-    headers: {
-      "Authorization": "Bearer $authToken",
-    },
-  );
-
-  final data =
-      jsonDecode(response.body);
-
-  return {
-    "statusCode": response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>>
-updateAdminProfile({
-  required String name,
-  required String email,
-}) async {
-  final response = await http.put(
-    Uri.parse(
-      "$baseUrl/api/admin/profile",
-    ),
-    headers: {
-      "Content-Type":
-          "application/json",
-      "Authorization":
-          "Bearer $authToken",
-    },
-    body: jsonEncode({
-      "name": name,
-      "email": email,
-    }),
-  );
-
-  return {
-    "statusCode":
-        response.statusCode,
-    "data":
-        jsonDecode(response.body),
-  };
-}
-
-static Future<Map<String, dynamic>>
-changePassword({
-  required String currentPassword,
-  required String newPassword,
-}) async {
-
-  final response = await http.put(
-    Uri.parse(
-      "$baseUrl/api/admin/change-password",
-    ),
-    headers: {
-      "Content-Type":
-          "application/json",
-      "Authorization":
-          "Bearer $authToken",
-    },
-    body: jsonEncode({
-      "currentPassword":
-          currentPassword,
-      "newPassword":
-          newPassword,
-    }),
-  );
-
-  return {
-    "statusCode":
-        response.statusCode,
-    "data":
-        jsonDecode(response.body),
-  };
-}
-
-static Future<Map<String, dynamic>>
-getAdminSettings() async {
-
-  final response = await http.get(
-    Uri.parse(
-      "$baseUrl/api/admin/settings",
-    ),
-  );
-
-  return {
-    "statusCode": response.statusCode,
-    "data": jsonDecode(response.body),
-  };
-}
-
-static Future<Map<String, dynamic>>
-updateAdminSettings({
-  required bool scanAlerts,
-  required bool productSyncAlerts,
-  required bool systemNotifications,
-}) async {
-
-  final response = await http.put(
-    Uri.parse(
-      "$baseUrl/api/admin/settings",
-    ),
-    headers: {
-      "Content-Type":
-          "application/json",
-    },
-    body: jsonEncode({
-      "scanAlerts": scanAlerts,
-      "productSyncAlerts":
-          productSyncAlerts,
-      "systemNotifications":
-          systemNotifications,
-    }),
-  );
-
-  return {
-    "statusCode": response.statusCode,
-    "data": jsonDecode(response.body),
-  };
-}
-
-static Future<Map<String, dynamic>> updateScan({
-  required String scanId,
-  required String roomType,
-}) async {
-  final url =
-      Uri.parse("$baseUrl/api/scans/$scanId");
-
-  final response = await http.put(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $authToken",
-    },
-    body: jsonEncode({
-      "roomType": roomType,
-    }),
-  );
-
-  final data =
-      jsonDecode(response.body);
-
-  return {
-    "statusCode":
-        response.statusCode,
-    "data": data,
-  };
-}
-
-static Future<Map<String, dynamic>> updateVideo({
-  required String videoId,
-  required String title,
-}) async {
-  final url =
+  static Future<Map<String, dynamic>> getUserNotifications() async {
+    final url = Uri.parse("$baseUrl/api/notifications");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getVendors() async {
+    final url = Uri.parse("$baseUrl/api/admin/vendors");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> createVendor({
+    required String name,
+    required String status,
+    required String website,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/vendors");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "name": name,
+        "status": status,
+        "website": website,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteVendor({
+    required String vendorId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/vendors/$vendorId");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateVendor({
+    required String vendorId,
+    required String name,
+    required String status,
+    required String website,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/vendors/$vendorId");
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "name": name,
+        "status": status,
+        "website": website,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getProductSyncs() async {
+    final url = Uri.parse("$baseUrl/api/admin/product-syncs");
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> createProductSync({
+    required String vendorId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/product-syncs");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "vendorId": vendorId,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteProductSync({
+    required String syncId,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/admin/product-syncs/$syncId");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> detectSpaceWithAI({
+    required String imagePath,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/ai/detect-space");
+
+    final request = http.MultipartRequest("POST", url);
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        "image",
+        imagePath,
+      ),
+    );
+
+    final streamedResponse = await request.send();
+
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    final data = jsonDecode(response.body);
+    print("AI API RESPONSE = $data");
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> saveVideoScan({
+    required String videoPath,
+    required String thumbnailUrl,
+    required double pixelsPerCm,
+    required List<Map<String, dynamic>> measurements,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/video-scans");
+
+    final request = http.MultipartRequest("POST", url);
+
+    request.headers["Authorization"] = "Bearer $authToken";
+
+    request.fields["pixelsPerCm"] = pixelsPerCm.toString();
+
+    request.fields["measurements"] = jsonEncode(measurements);
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        "video",
+        videoPath,
+      ),
+    );
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        "thumbnail",
+        thumbnailUrl,
+      ),
+    );
+
+    final streamedResponse = await request.send();
+
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> deleteVideo(
+    String id,
+  ) async {
+    final response = await http.delete(
+      Uri.parse("$baseUrl/api/video-scans/$id"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getAdminProfile() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/api/admin/profile"),
+      headers: {
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateAdminProfile({
+    required String name,
+    required String email,
+  }) async {
+    final response = await http.put(
       Uri.parse(
-    "$baseUrl/api/video-scans/$videoId",
-  );
+        "$baseUrl/api/admin/profile",
+      ),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "name": name,
+        "email": email,
+      }),
+    );
 
-  final response = await http.put(
-    url,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization":
-          "Bearer $authToken",
-    },
-    body: jsonEncode({
-      "title": title,
-    }),
-  );
+    return {
+      "statusCode": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+  }
 
-  final data =
-      jsonDecode(response.body);
+  static Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await http.put(
+      Uri.parse(
+        "$baseUrl/api/admin/change-password",
+      ),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "currentPassword": currentPassword,
+        "newPassword": newPassword,
+      }),
+    );
 
-  return {
-    "statusCode":
-        response.statusCode,
-    "data": data,
-  };
-}
+    return {
+      "statusCode": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+  }
 
-static Future<Map<String, dynamic>>
-    getUnreadCount() async {
-  final url = Uri.parse(
-    "$baseUrl/api/notifications/unread-count",
-  );
+  static Future<Map<String, dynamic>> getAdminSettings() async {
+    final response = await http.get(
+      Uri.parse(
+        "$baseUrl/api/admin/settings",
+      ),
+    );
 
-  final response = await http.get(
-    url,
-    headers: {
-      "Authorization":
-          "Bearer $authToken",
-    },
-  );
+    return {
+      "statusCode": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+  }
 
-  return {
-    "statusCode": response.statusCode,
-    "data": jsonDecode(response.body),
-  };
-}
+  static Future<Map<String, dynamic>> updateAdminSettings({
+    required bool scanAlerts,
+    required bool productSyncAlerts,
+    required bool systemNotifications,
+  }) async {
+    final response = await http.put(
+      Uri.parse(
+        "$baseUrl/api/admin/settings",
+      ),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "scanAlerts": scanAlerts,
+        "productSyncAlerts": productSyncAlerts,
+        "systemNotifications": systemNotifications,
+      }),
+    );
 
-static Future<Map<String, dynamic>>
-    markNotificationsRead() async {
+    return {
+      "statusCode": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+  }
 
-  final url = Uri.parse(
-    "$baseUrl/api/notifications/mark-read",
-  );
+  static Future<Map<String, dynamic>> updateScan({
+    required String scanId,
+    required String roomType,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/scans/$scanId");
 
-  final response = await http.put(
-    url,
-    headers: {
-      "Authorization":
-          "Bearer $authToken",
-    },
-  );
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "roomType": roomType,
+      }),
+    );
 
-  return {
-    "statusCode": response.statusCode,
-    "data": jsonDecode(response.body),
-  };
-}
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> updateVideo({
+    required String videoId,
+    required String title,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/api/video-scans/$videoId",
+    );
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $authToken",
+      },
+      body: jsonEncode({
+        "title": title,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    return {
+      "statusCode": response.statusCode,
+      "data": data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getUnreadCount() async {
+    final url = Uri.parse(
+      "$baseUrl/api/notifications/unread-count",
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    return {
+      "statusCode": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+  }
+
+  static Future<Map<String, dynamic>> markNotificationsRead() async {
+    final url = Uri.parse(
+      "$baseUrl/api/notifications/mark-read",
+    );
+
+    final response = await http.put(
+      url,
+      headers: {
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    return {
+      "statusCode": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+  }
 }

@@ -27,14 +27,30 @@ class ScanDetailScreen extends StatelessWidget {
     }
   }
 
+  List<Map<String, dynamic>> _measurementLines() {
+    final lines = scan["measurementLines"];
+
+    if (lines is List) {
+      return lines.map((e) => Map<String, dynamic>.from(e)).toList();
+    }
+
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final width = scan["width"] ?? 0;
-    final height = scan["height"] ?? 0;
-    final depth = scan["depth"] ?? 0;
-    final area = scan["area"] ?? 0;
+    print("SCAN DATA = $scan");
+    print("MEASUREMENT LINES = ${scan["measurementLines"]}");
+    final width = ((scan["width"] ?? 0) as num).toDouble();
+
+    final height = ((scan["height"] ?? 0) as num).toDouble();
+
+    final depth = ((scan["depth"] ?? 0) as num).toDouble();
+
+    final area = ((scan["area"] ?? 0) as num).toDouble();
     final roomType = scan["roomType"] ?? "Study Room";
     final date = scan["createdAt"].toString().substring(0, 10);
+    final measurementLines = _measurementLines();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
@@ -50,26 +66,44 @@ class ScanDetailScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
-            child: _isValidImageUrl(scan["imageUrl"])
-                ? Image.network(
-                    scan["imageUrl"],
-                    height: 280,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  )
-                : Container(
-                    height: 280,
-                    color: Colors.indigo.shade50,
-                    child: const Icon(
-                      Icons.home_work,
-                      size: 90,
-                      color: Colors.indigo,
+            child: SizedBox(
+              height: 280,
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  _isValidImageUrl(scan["imageUrl"])
+                      ? Image.network(
+                          scan["imageUrl"],
+                          height: 280,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          height: 280,
+                          color: Colors.indigo.shade50,
+                          child: const Center(
+                            child: Icon(
+                              Icons.home_work,
+                              size: 90,
+                              color: Colors.indigo,
+                            ),
+                          ),
+                        ),
+                  if (measurementLines.isNotEmpty)
+                    CustomPaint(
+                      size: const Size(
+                        double.infinity,
+                        double.infinity,
+                      ),
+                      painter: SavedMeasurementPainter(
+                        measurementLines,
+                      ),
                     ),
-                  ),
+                ],
+              ),
+            ),
           ),
-
           const SizedBox(height: 20),
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -108,29 +142,41 @@ class ScanDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 20),
-
           Row(
             children: [
-              Expanded(child: _metricCard("Width", "$width cm")),
-              const SizedBox(width: 12),
-              Expanded(child: _metricCard("Height", "$height cm")),
+              Expanded(
+                child: _metricCard(
+                  "Width",
+                  "${width.toStringAsFixed(2)} cm",
+                ),
+              ),
+              Expanded(
+                child: _metricCard(
+                  "Height",
+                  "${height.toStringAsFixed(2)} cm",
+                ),
+              ),
             ],
           ),
-
           const SizedBox(height: 12),
-
           Row(
             children: [
-              Expanded(child: _metricCard("Depth", "$depth cm")),
-              const SizedBox(width: 12),
-              Expanded(child: _metricCard("Area", "$area m²")),
+              Expanded(
+                child: _metricCard(
+                  "Depth",
+                  "${depth.toStringAsFixed(2)} cm",
+                ),
+              ),
+              Expanded(
+                child: _metricCard(
+                  "Area",
+                  "${area.toStringAsFixed(2)} m²",
+                ),
+              ),
             ],
           ),
-
           const SizedBox(height: 20),
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -182,4 +228,65 @@ class ScanDetailScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class SavedMeasurementPainter extends CustomPainter {
+  final List<Map<String, dynamic>> lines;
+
+  SavedMeasurementPainter(this.lines);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = Colors.purple
+      ..strokeWidth = 4;
+
+    for (final line in lines) {
+      final x1 = (line["point1x"] as num).toDouble();
+      final y1 = (line["point1y"] as num).toDouble();
+      final x2 = (line["point2x"] as num).toDouble();
+      final y2 = (line["point2y"] as num).toDouble();
+
+      final scaleY = size.height / 360;
+      final scaleX = size.width / 360;
+
+      final p1 = Offset(
+        x1 * scaleX,
+        y1 * scaleY,
+      );
+
+      final p2 = Offset(
+        x2 * scaleX,
+        y2 * scaleY,
+      );
+      canvas.drawLine(p1, p2, linePaint);
+
+      final midpoint = Offset(
+        (p1.dx + p2.dx) / 2,
+        (p1.dy + p2.dy) / 2,
+      );
+
+      final dimension = line["dimension"] ?? "Measure";
+      final value = (line["value"] as num).toDouble();
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: "$dimension\n${value.toStringAsFixed(1)} cm",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            backgroundColor: Colors.black,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+
+      textPainter.layout();
+      textPainter.paint(canvas, midpoint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
